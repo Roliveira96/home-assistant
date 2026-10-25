@@ -36,3 +36,4 @@ config/media/
 
 # Alarm event history (private)
 config/alarme/*.csv
+

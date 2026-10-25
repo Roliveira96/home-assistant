@@ -196,14 +196,23 @@ views:
   - type: grid
     cards:
     - type: heading
-      heading: Agenda
-      icon: mdi:calendar
-    - type: calendar
-      entities:
-      - calendar.casa
-      initial_view: listWeek
+      heading: Fotos
+      icon: mdi:image-multiple
+    - type: picture-entity
+      entity: camera.porta_retrato
+      show_name: false
+      show_state: false
+      camera_view: auto
+      aspect_ratio: '4:3'
+      tap_action:
+        action: none
+      hold_action:
+        action: none
       grid_options:
         columns: full
+    - type: markdown
+      content: |
+        📷 Para adicionar fotos: **Mídia → Minha mídia → fotos → Enviar**. Troca a cada 20 s.
   - type: grid
     cards:
     - type: heading

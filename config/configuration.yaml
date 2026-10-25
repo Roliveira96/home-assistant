@@ -2,6 +2,14 @@
 # Loads default set of integrations. Do not remove.
 default_config:
 
+homeassistant:
+  # Media browser root ("Minha mídia"); photos for the photo frame go in
+  # media/fotos (kept out of git: the repository is public).
+  media_dirs:
+    local: /config/media
+  allowlist_external_dirs:
+    - /config/media
+
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
@@ -284,3 +292,5 @@ shell_command:
   # Armed-alarm CSV history and period export (config/alarme/alarm_log.py).
   alarme_log_append: python3 /config/alarme/alarm_log.py append "{{ tipo }}" "{{ sensores }}"
   alarme_log_export: python3 /config/alarme/alarm_log.py export "{{ start }}" "{{ end }}"
+  # Prints a random photo path for the photo frame (config/fotos/next_photo.py).
+  fotos_proxima: python3 /config/fotos/next_photo.py "{{ current | default('') }}"
