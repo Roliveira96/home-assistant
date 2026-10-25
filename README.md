@@ -131,6 +131,7 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 - [x] Acesso remoto pela Cloudflare Tunnel (https://casa.rmo.dev.br)
 - [ ] Notificações no celular para eventos dentro de um período (ideia abaixo)
 - [ ] Monitoramento: avisar quando a máquina ficar offline ou um sensor ficar indisponível (ideia abaixo)
+- [ ] Integrar os dispositivos ao Google Home (ideia abaixo)
 
 ### Ideia: avisar quando a máquina ou os sensores caírem
 
@@ -180,3 +181,23 @@ Esboço com o app Companion (o nome do serviço `notify.mobile_app_<celular>` ap
     - delay: "00:05:00"  # anti-spam com mode: single
   mode: single
 ```
+
+### Ideia: dispositivos no Google Home
+
+**Objetivo:** controlar e ver os dispositivos do HA (Zigbee, Tuya, interruptores) pelo app Google Home e por voz no Google Assistente/Gemini.
+
+Opções a avaliar:
+
+| Opção | Custo | Como funciona | Observações |
+|---|---|---|---|
+| **Home Assistant Cloud (Nabu Casa)** | assinatura mensal | Liga a integração em poucos cliques | Mais simples e estável; também financia o projeto HA |
+| **Integração manual `google_assistant`** | gratuito | Projeto no Google Cloud + Google Home Developer Console, apontando para `https://casa.rmo.dev.br/api/google_assistant` | Já temos a URL pública pela Cloudflare Tunnel; configuração mais trabalhosa; a chave da conta de serviço (JSON) **não pode ir para o git** |
+| **Matter (ex.: Home Assistant Matter Hub / Matterbridge)** | gratuito | Expõe as entidades do HA como dispositivos Matter na rede local | Não depende da nuvem; precisa de um dispositivo Google com Matter (Nest Hub, Nest Mini etc.) |
+
+Pontos a decidir:
+
+1. Qual opção usar.
+2. Quais entidades expor: só o que faz sentido controlar ou ver por voz (luzes, interruptores, temperatura); sensores técnicos ficam de fora.
+3. Nomes e cômodos: o Google usa o nome e a área de cada entidade, então vale revisar os nomes no HA antes (ex.: "Fundos Cadas").
+
+Observação: a integração `google_cloud` (texto para voz) que já existe é outra coisa e hoje dá erro 403 porque a API Text-to-Speech não está ativada no projeto do Google Cloud.
