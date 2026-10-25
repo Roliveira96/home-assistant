@@ -1,0 +1,53 @@
+- id: '1792436729228'
+  alias: Nova automação
+  description: ''
+  triggers:
+  - device_id: 32a5acff014f96d666ddf232e04f2283
+    domain: button
+    entity_id: 70c22eda75b041d72aecf65037235999
+    type: pressed
+    trigger: device
+  conditions: []
+  actions: []
+  mode: single
+- id: '1792446037249'
+  alias: Automação sensor lateral casa
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: 034700d56a3a1925373de65b0b15c31a
+    entity_id: dd52c9130824340d86c9d3f1ba3bfeb2
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  conditions:
+  - condition: time
+    after: '18:00:00'
+  actions:
+  - type: turn_on
+    device_id: b62c5e9c0c91d2e180772c366ebd358e
+    entity_id: 63af2b8ecfcd8fbcdbfeb9df83d2bf02
+    domain: switch
+  mode: single
+- id: '1792457875007'
+  alias: 'Area Externa '
+  description: ''
+  triggers:
+  - type: turned_off
+    device_id: 84bd7b5cff253df346e14b511d767965
+    entity_id: 7d90195d4c98e17a32ad0d5bd9b34d8d
+    domain: update
+    trigger: device
+  conditions:
+  - condition: time
+    after: '18:00:00'
+    before: 08:00:00
+  actions:
+  - type: turn_on
+    device_id: b62c5e9c0c91d2e180772c366ebd358e
+    entity_id: 63af2b8ecfcd8fbcdbfeb9df83d2bf02
+    domain: switch
+  mode: single

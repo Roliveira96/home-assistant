@@ -1,0 +1,28 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    # Host networking keeps device discovery (mDNS, Bluetooth, SSDP) working.
+    network_mode: host
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    devices:
+      # Sonoff Zigbee 3.0 USB Dongle Plus V2, used by the ZHA integration.
+      - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_686e6746c078f011af23f2eba7772636-if00-port0:/dev/ttyUSB0
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    # Only starts when COMPOSE_PROFILES includes "tunnel" (see .env.example).
+    profiles: ["tunnel"]
+    # Host networking lets the tunnel reach Home Assistant at localhost:9999.
+    network_mode: host
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}
+    depends_on:
+      - homeassistant

@@ -1,0 +1,24 @@
+# Secrets and credentials
+.env
+config/secrets.yaml
+config/.storage/
+config/.cloud/
+config/image/
+*.pem
+*emergency_kit*
+
+# Runtime data: databases, logs, caches
+config/*.db
+config/*.db-*
+config/*.log
+config/*.log.*
+config/.ha_run.lock
+config/.HA_VERSION
+config/.cache/
+config/deps/
+config/tts/
+config/backups/
+config/*.bak-*
+
+# Backups (encrypted .tar files from Home Assistant)
+*.tar
