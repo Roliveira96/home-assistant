@@ -70,6 +70,27 @@ template:
         unique_id: recent_detection_back_house
         state: "{{ is_state('binary_sensor.fundos_casa', 'on') }}"
         delay_off: "{{ {'minutes': states('input_number.alarme_janela_confirmacao') | int(2)} }}"
+  # Log of classified detections while the alarm is armed (last 50, newest
+  # first). Trigger-based template entities restore their attributes on restart.
+  - triggers:
+      - trigger: event
+        event_type: alarme_evento
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.event.data.armado | bool(false) }}"
+    sensor:
+      - name: Registro do alarme armado
+        unique_id: armed_alarm_log
+        icon: mdi:shield-alert
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          eventos: >
+            {% set new = [{'hora': now().strftime('%d/%m %H:%M:%S'),
+                           'tipo': trigger.event.data.tipo,
+                           'sensores': trigger.event.data.sensores,
+                           'foto': trigger.event.data.foto | default('')}] %}
+            {{ (new + (this.attributes.eventos | default([], true)))[:50] }}
 
 zha:
   # Local quirks for devices ZHA does not support out of the box.

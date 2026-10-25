@@ -29,3 +29,7 @@ config/*.json
 
 # Python bytecode (custom ZHA quirks)
 __pycache__/
+
+# Camera snapshots (private; never publish)
+config/www/
+config/media/

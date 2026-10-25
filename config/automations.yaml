@@ -172,6 +172,13 @@
         {% endfor %}
         {{ ns.names }}
       where: '{{ ([state_attr(first, ''friendly_name'')] + partners) | join('' + '') }}'
+  # Consumed by the "Registro do alarme armado" sensor (and, later, by the
+  # camera snapshot automation).
+  - event: alarme_evento
+    event_data:
+      tipo: '{{ ''humano'' if is_human else ''animal'' }}'
+      sensores: '{{ where }}'
+      armado: '{{ armed }}'
   - choose:
     - conditions:
       - condition: template
@@ -183,7 +190,7 @@
       - action: logbook.log
         data:
           name: Possível humano
-          message: '{{ where }}'
+          message: '{{ where }}{{ '' (alarme armado)'' if armed else '''' }}'
           entity_id: counter.eventos_possivel_humano
       - if:
         - condition: template
@@ -217,7 +224,7 @@
     - action: logbook.log
       data:
         name: Possível animalzinho
-        message: '{{ where }}'
+        message: '{{ where }}{{ '' (alarme armado)'' if armed else '''' }}'
         entity_id: counter.eventos_possivel_animal
     - if:
       - condition: template

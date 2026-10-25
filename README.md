@@ -136,6 +136,10 @@ Peças:
 | `binary_sensor.deteccao_recente_*` | template: fica ligado enquanto o sensor detecta e pela janela depois (não dá para usar `last_changed`, que muda também quando o HA reinicia) |
 | `counter.eventos_possivel_humano` / `counter.eventos_possivel_animal` | contagem do dia, zerada à meia-noite |
 
+### Registro do alarme armado
+
+Toda detecção classificada dispara o evento `alarme_evento` (`tipo`, `sensores`, `armado` e, no futuro, `foto`). O sensor template `sensor.registro_do_alarme_armado` guarda os **50 últimos eventos com o alarme armado** no atributo `eventos` (sobrevive a reinicializações) e o painel mostra a tabela na seção "Registro do alarme armado". No logbook, os eventos com alarme armado vêm marcados com "(alarme armado)".
+
 Todos os ajustes (e a sensibilidade do radar, padrão 4) ficam no painel **Alarme**, seção "Ajustes da classificação". Os eventos classificados aparecem no logbook do painel. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
 
 ## Quirks Zigbee próprios
@@ -177,6 +181,7 @@ As notificações vão para `notify.mobile_app_android_ricardo` (app Companion n
 - [ ] Notificações no celular para eventos dentro de um período (ideia abaixo)
 - [ ] Monitoramento: avisar quando a máquina ficar offline ou um sensor ficar indisponível (ideia abaixo)
 - [ ] Integrar os dispositivos ao Google Home (ideia abaixo)
+- [ ] Câmeras IP: foto a cada evento com o alarme armado (ideia abaixo)
 
 ### Ideia: avisar quando a máquina ou os sensores caírem
 
@@ -246,3 +251,20 @@ Pontos a decidir:
 3. Nomes e cômodos: o Google usa o nome e a área de cada entidade, então vale revisar os nomes no HA antes (ex.: "Fundos Casa").
 
 Observação: a integração `google_cloud` (texto para voz) que já existe é outra coisa e hoje dá erro 403 porque a API Text-to-Speech não está ativada no projeto do Google Cloud.
+
+### Ideia: câmeras IP tirando foto nos eventos do alarme
+
+**Objetivo:** com o alarme armado, a cada detecção (humano **ou** animal) tirar uma foto da câmera mais próxima, para mapear o que está acontecendo e conferir se a classificação acerta.
+
+Como encaixar no que já existe:
+
+1. **Integrar as câmeras** ao HA. Preferir câmeras com **RTSP/ONVIF** (integração `onvif` ou `generic`); o `go2rtc` já está ativo e ajuda no streaming. Evitar modelos só-nuvem.
+2. **Mapear sensor → câmera** (ex.: Lateral casa → câmera lateral) num dicionário na automação.
+3. **Nova automação** com gatilho no evento `alarme_evento` (com `armado: true`):
+   - `camera.snapshot` para `/config/www/snapshots/<data>_<hora>_<sensor>.jpg` (ou `/media`);
+   - notificação no celular com a imagem anexada (`data.image`), inclusive para animal;
+   - repassar o caminho da foto no campo `foto` do evento, para a tabela do **Registro do alarme armado** mostrar a miniatura.
+4. **Limpeza**: apagar fotos com mais de X dias (`shell_command` ou automação diária) para não lotar o disco.
+5. **Privacidade**: as fotos ficam **fora do git** (`config/www/` e `config/media/` já estão no `.gitignore`, o repositório é público). Arquivos em `/config/www` ficam acessíveis em `/local/...` para quem souber o caminho; preferir `/media` se as fotos forem sensíveis.
+
+Futuro: com câmeras, dá para trocar a heurística humano/animal por **detecção de pessoa por imagem** (ex.: Frigate), bem mais confiável.

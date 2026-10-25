@@ -121,3 +121,20 @@ views:
 
               **Possível animalzinho**: detecção isolada. Com o alarme
               armado, só notifica, no máximo uma vez por intervalo.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Registro do alarme armado
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >
+              {% set ev = state_attr('sensor.registro_do_alarme_armado', 'eventos') or [] %}
+              {% if ev %}
+              | Quando | Classificação | Sensores |
+              |---|---|---|
+              {% for e in ev %}| {{ e.hora }} | {{ '🧍 Possível humano' if e.tipo == 'humano' else '🐈 Possível animalzinho' }} | {{ e.sensores }} |
+              {% endfor %}
+              {% else %}
+              Nenhum evento com o alarme armado ainda.
+              {% endif %}
