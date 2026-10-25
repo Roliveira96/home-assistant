@@ -200,6 +200,12 @@ input_number:
     unit_of_measurement: min
     mode: slider
 
+input_text:
+  # "<url path>|<row count>" of the last export (set by alarme_exportar_registro).
+  alarme_ultimo_export:
+    name: Último download do registro
+    max: 255
+
 input_select:
   # Sound played on the notebook for "possível humano" (alarme_som_pessoa).
   alarme_som_pessoa:
@@ -223,6 +229,15 @@ input_boolean:
     icon: mdi:volume-high
 
 input_datetime:
+  # Period for the armed-alarm log download.
+  alarme_export_inicio:
+    name: Download - início
+    has_date: true
+    has_time: true
+  alarme_export_fim:
+    name: Download - fim
+    has_date: true
+    has_time: true
   alarme_ultimo_aviso_animal:
     name: Último aviso de possível animal
     has_date: true
@@ -257,3 +272,6 @@ shell_command:
     -i {{ file | default('/sounds/freedesktop/stereo/bell.oga') }}
     -filter:a volume={{ volume | default(1.0) }},apad=pad_dur=3
     -f pulse "Home Assistant"
+  # Armed-alarm CSV history and period export (config/alarme/alarm_log.py).
+  alarme_log_append: python3 /config/alarme/alarm_log.py append "{{ tipo }}" "{{ sensores }}"
+  alarme_log_export: python3 /config/alarme/alarm_log.py export "{{ start }}" "{{ end }}"

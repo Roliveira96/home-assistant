@@ -60,3 +60,32 @@ campainha_luz_1min:
   - action: switch.turn_off
     target:
       entity_id: switch.lampada_corredor_socket_1
+alarme_exportar_registro:
+  alias: Gerar download do registro do alarme
+  description: Gera um CSV com os eventos do alarme armado entre "Download - início"
+    e "Download - fim" e mostra o link no painel (e no celular). O link expira em
+    24 h.
+  icon: mdi:file-download
+  mode: single
+  sequence:
+  - action: shell_command.alarme_log_export
+    data:
+      start: '{{ states(''input_datetime.alarme_export_inicio'') }}'
+      end: '{{ states(''input_datetime.alarme_export_fim'') }}'
+    response_variable: result
+  - variables:
+      path: '{{ result.stdout.split(''|'')[0] }}'
+      rows: '{{ result.stdout.split(''|'')[1] | default(0) }}'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.alarme_ultimo_export
+    data:
+      value: '{{ result.stdout }}'
+  - action: notify.mobile_app_android_ricardo
+    data:
+      title: ⬇️ Registro do alarme pronto
+      message: '{{ rows }} evento(s) de {{ states(''input_datetime.alarme_export_inicio'')[:16]
+        }} a {{ states(''input_datetime.alarme_export_fim'')[:16] }}. Toque para baixar
+        (expira em 24 h).'
+      data:
+        clickAction: '{{ path }}'

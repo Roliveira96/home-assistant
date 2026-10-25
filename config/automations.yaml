@@ -384,3 +384,20 @@
   - action: script.campainha_tocar
   mode: queued
   max: 10
+- id: '1792500000009'
+  alias: Alarme - gravar registro em arquivo
+  description: Grava cada evento classificado com o alarme armado no histórico CSV
+    (config/alarme/events.csv), usado pelo download por período.
+  triggers:
+  - trigger: event
+    event_type: alarme_evento
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.event.data.armado | bool(false) }}'
+  actions:
+  - action: shell_command.alarme_log_append
+    data:
+      tipo: '{{ trigger.event.data.tipo }}'
+      sensores: '{{ trigger.event.data.sensores }}'
+  mode: queued
+  max: 20

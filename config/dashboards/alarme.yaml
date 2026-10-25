@@ -216,19 +216,60 @@ views:
               **Possível animalzinho**: detecção isolada. Com o alarme
               armado, só notifica, no máximo uma vez por intervalo.
       - type: grid
+        column_span: 2
         cards:
           - type: heading
             heading: Registro do alarme armado
+            icon: mdi:shield-alert
           - type: markdown
             grid_options:
               columns: full
-            content: >
-              {% set ev = state_attr('sensor.registro_do_alarme_armado', 'eventos') or [] %}
-              {% if ev %}
-              | Quando | Classificação | Sensores |
-              |---|---|---|
-              {% for e in ev %}| {{ e.hora }} | {{ '🧍 Possível humano' if e.tipo == 'humano' else '🐈 Possível animalzinho' }} | {{ e.sensores }} |
-              {% endfor %}
-              {% else %}
+            content: >-
+              {% set ev = (state_attr('sensor.registro_do_alarme_armado', 'eventos') or [])[:50] %}
+              {% if not ev %}
               Nenhum evento com o alarme armado ainda.
+              {% else %}
+              {% set h = ev | selectattr('tipo', 'eq', 'humano') | list | count %}
+              <ha-alert alert-type="info">Últimos {{ ev | count }} eventos · 🧍 {{ h }} possível humano · 🐈 {{ ev | count - h }} possível animalzinho</ha-alert>
+              {% set ns = namespace(day='') %}
+              {% for e in ev %}
+              {% set day = e.hora[:5] %}
+              {% if day != ns.day %}
+              {% set ns.day = day %}
+
+              **📅 {{ day }}**
+
+              {% endif %}
+              - {{ '🧍' if e.tipo == 'humano' else '🐈' }} `{{ e.hora[6:11] }}` {{ e.sensores }}
+              {% endfor %}
+              {% endif %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: Baixar registro
+            icon: mdi:file-download
+          - type: entities
+            entities:
+              - entity: input_datetime.alarme_export_inicio
+                name: De
+              - entity: input_datetime.alarme_export_fim
+                name: Até
+          - type: button
+            name: Gerar arquivo
+            icon: mdi:file-export
+            tap_action:
+              action: perform-action
+              perform_action: script.alarme_exportar_registro
+            grid_options:
+              columns: full
+              rows: 2
+          - type: markdown
+            content: >-
+              {% set v = states('input_text.alarme_ultimo_export') %}
+              {% if '|' in v %}
+              {% set path, rows = v.split('|') %}
+              [⬇️ **Baixar CSV**]({{ path }}) — {{ rows }} evento(s).
+              O link expira em 24 h.
+              {% else %}
+              Escolha o período e toque em **Gerar arquivo**.
               {% endif %}

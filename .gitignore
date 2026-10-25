@@ -33,3 +33,6 @@ __pycache__/
 # Camera snapshots (private; never publish)
 config/www/
 config/media/
+
+# Alarm event history (private)
+config/alarme/*.csv
