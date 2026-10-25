@@ -108,6 +108,15 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 - Ativar **autenticação em dois fatores** no perfil de cada usuário do HA, já que a página de login ficará exposta na internet.
 - Opcional: proteger com **Cloudflare Access**. Atenção: o Access bloqueia o app Companion do celular, a não ser que se configure uma regra de bypass ou mTLS.
 
+## Painel "Casa" (tela inicial)
+
+`config/dashboards/alarme.yaml` (YAML, URL `/dashboard-alarme`) é a **tela inicial padrão** do HA para todos os usuários (`frontend/set_system_data` → `core.default_panel = dashboard-alarme`; também dá para trocar em Configurações → Painéis). Duas abas:
+
+| Aba | Conteúdo |
+|---|---|
+| **Casa** | badges (alarme, pessoas/animais/campainha hoje, luz do corredor, Zigbee fora do ar só quando houver); Alarme (armar/desarmar, modo noite); Campainha (última vez, toques, testar, luz); Hoje (pessoa/animal/disparos e gráfico 24 h); Registro do alarme armado; Baixar registro e últimos eventos |
+| **Ajustes** | sons no notebook e testes; classificação pessoa × animal; detecções por sensor; toques da campainha (48 h) |
+
 ## Alarme
 
 `alarm_control_panel.alarme_casa` usa a plataforma `manual` (definida em `configuration.yaml`), sem código:
@@ -164,7 +173,7 @@ O Sensor de passagem novo (radar mmWave) pulsa a cada ~61 s (10 s ligado), entã
 
 Toda detecção classificada dispara o evento `alarme_evento` (`tipo`, `sensores`, `armado` e, no futuro, `foto`). O sensor template `sensor.registro_do_alarme_armado` guarda os **50 últimos eventos com o alarme armado** no atributo `eventos` (sobrevive a reinicializações) e o painel mostra a tabela na seção "Registro do alarme armado". No logbook, os eventos com alarme armado vêm marcados com "(alarme armado)".
 
-Todos os ajustes (e a sensibilidade do radar, padrão 4) ficam no painel **Alarme**, seção "Ajustes da classificação". Os eventos classificados aparecem no logbook do painel. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
+Todos os ajustes (e a sensibilidade do radar, padrão 4) ficam no painel **Casa**, aba **Ajustes**, seção "Ajustes da classificação". Os eventos classificados aparecem no logbook do painel. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
 
 ## Quirks Zigbee próprios
 

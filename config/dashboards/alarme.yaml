@@ -1,290 +1,338 @@
-title: Alarme
+title: Casa
 views:
-  - title: Alarme
-    path: alarme
-    icon: mdi:shield-home
-    type: sections
-    max_columns: 3
-    sections:
-      - type: grid
-        cards:
-          - type: heading
-            heading: Controle
-          - type: alarm-panel
-            entity: alarm_control_panel.alarme_casa
-            name: Alarme casa
-            states:
-              - arm_home
-              - arm_night
-              - arm_away
-            grid_options:
-              columns: full
-          - type: tile
-            entity: switch.lampada_corredor_socket_1
-            name: Lâmpada corredor
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: input_boolean.alarme_som_notebook
-            name: Som no notebook
-            icon: mdi:volume-high
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: input_select.alarme_som_pessoa
-            name: Som de pessoa
-            features:
-              - type: select-options
-            grid_options:
-              columns: full
-          - type: button
-            name: Testar som de pessoa
-            icon: mdi:human-handsdown
-            tap_action:
-              action: perform-action
-              perform_action: script.alarme_som_pessoa
-            grid_options:
-              columns: 6
-              rows: 2
-          - type: button
-            name: Testar som de animal
-            icon: mdi:cat
-            tap_action:
-              action: perform-action
-              perform_action: script.alarme_som_animal
-            grid_options:
-              columns: 6
-              rows: 2
-          - type: markdown
-            content: >
-              🌙 **Modo noite automático**: arma às **00:00** e desarma às
-              **07:30**. À noite não toca som; pessoa liga a lâmpada e
-              notifica o celular, animal só fica no registro.
-      - type: grid
-        cards:
-          - type: heading
-            heading: Campainha
-            icon: mdi:doorbell
-          - type: tile
-            entity: sensor.ultima_campainha
-            name: Última vez
-            icon: mdi:doorbell-video
-            color: blue
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: counter.campainha_hoje
-            name: Toques hoje
-            icon: mdi:counter
-            color: blue
-            grid_options:
-              columns: 6
-          - type: markdown
-            content: >
-              {% set s = states.sensor.ultima_campainha %}
-              {% if s and s.state not in ['unknown', 'unavailable'] %}
-              {% set m = ((now() - as_datetime(s.state)).total_seconds() // 60) | int %}
-              🔔 Tocou **{{ 'agora há pouco' if m < 1 else ('há ' ~ m ~ ' min' if m < 60 else ('há ' ~ (m // 60) ~ ' h' if m < 1440 else 'há ' ~ (m // 1440) ~ ' dia(s)')) }}**
-              ({{ as_local(as_datetime(s.state)).strftime('%d/%m às %H:%M') }}),
-              {{ s.attributes.tipo }}{{ ', luz do corredor ligada por 1 min' if s.attributes.luz else '' }}.
-              {% else %}
-              🔔 A campainha ainda não tocou.
-              {% endif %}
-          - type: button
-            name: Testar campainha
-            icon: mdi:doorbell
-            tap_action:
-              action: perform-action
-              perform_action: script.campainha_tocar
-            grid_options:
-              columns: 6
-              rows: 2
-          - type: button
-            entity: switch.lampada_corredor_socket_1
-            name: Luz do corredor
-            icon: mdi:lightbulb
-            show_state: true
-            tap_action:
-              action: toggle
-            grid_options:
-              columns: 6
-              rows: 2
-          - type: logbook
-            title: Toques recentes
-            hours_to_show: 48
-            target:
-              entity_id:
-                - script.campainha_tocar
-      - type: grid
-        cards:
-          - type: heading
-            heading: Eventos hoje
-          - type: tile
-            entity: counter.eventos_possivel_humano
-            name: Possível humano
-            icon: mdi:human-handsdown
-            color: red
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: counter.eventos_possivel_animal
-            name: Possível animalzinho
-            icon: mdi:cat
-            color: amber
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: sensor.eventos_hoje_total
-            name: Total de detecções
-            icon: mdi:motion-sensor
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: sensor.disparos_do_alarme_hoje
-            name: Disparos do alarme
-            icon: mdi:alarm-light
-            color: red
-            grid_options:
-              columns: 6
-          - type: tile
-            entity: sensor.eventos_hoje_sensor_de_passagem
-            name: Sensor de passagem
-            icon: mdi:walk
-            grid_options:
-              columns: 4
-          - type: tile
-            entity: sensor.eventos_hoje_lateral_casa
-            name: Lateral casa
-            icon: mdi:motion-sensor
-            grid_options:
-              columns: 4
-          - type: tile
-            entity: sensor.eventos_hoje_fundos_casa
-            name: Fundos Casa
-            icon: mdi:motion-sensor
-            grid_options:
-              columns: 4
-          - type: history-graph
-            title: Detecções nas últimas 24 h
-            hours_to_show: 24
-            entities:
-              - entity: binary_sensor.area_externa_sensor_de_passagem_novo
-                name: Sensor de passagem
-              - entity: binary_sensor.lateral_casa
-                name: Lateral casa
-              - entity: binary_sensor.fundos_casa
-                name: Fundos Casa
-              - entity: alarm_control_panel.alarme_casa
-                name: Alarme
-      - type: grid
-        cards:
-          - type: heading
-            heading: Últimos eventos
-          - type: logbook
-            hours_to_show: 24
-            target:
-              entity_id:
-                - counter.eventos_possivel_humano
-                - counter.eventos_possivel_animal
-                - alarm_control_panel.alarme_casa
-                - binary_sensor.area_externa_sensor_de_passagem_novo
-                - binary_sensor.lateral_casa
-                - binary_sensor.fundos_casa
-                - switch.lampada_corredor_socket_1
-                - script.campainha_tocar
-      - type: grid
-        cards:
-          - type: heading
-            heading: Ajustes da classificação
-          - type: entities
-            entities:
-              - entity: input_number.alarme_janela_confirmacao
-                name: Janela para 2 sensores (min)
-              - entity: input_number.alarme_tempo_presenca
-                name: Presença contínua = humano (s)
-              - entity: input_number.alarme_intervalo_aviso_animal
-                name: Intervalo entre avisos de animal (min)
-              - entity: number.area_externa_sensor_de_passagem_novo_sensitivity
-                name: Sensibilidade do radar (0-10)
-              - entity: input_boolean.alarme_radar_confirma
-                name: Radar confirma humano
-          - type: markdown
-            content: >
-              **Possível humano**: 2 sensores diferentes dentro da janela,
-              ou o mesmo sensor detectando direto pelo tempo de presença.
-              Com o alarme armado, dispara, liga a lâmpada e notifica.
+- title: Casa
+  path: casa
+  icon: mdi:home
+  type: sections
+  max_columns: 3
+  badges:
+  - type: entity
+    entity: alarm_control_panel.alarme_casa
+    name: Alarme
+    show_name: true
+    show_state: true
+    show_icon: true
+  - type: entity
+    entity: counter.eventos_possivel_humano
+    name: Pessoas hoje
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: red
+  - type: entity
+    entity: counter.eventos_possivel_animal
+    name: Animais hoje
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: amber
+  - type: entity
+    entity: counter.campainha_hoje
+    name: Campainha hoje
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: blue
+  - type: entity
+    entity: switch.lampada_corredor_socket_1
+    name: Luz corredor
+    show_name: true
+    show_state: true
+    show_icon: true
+    tap_action:
+      action: toggle
+  - type: entity
+    entity: sensor.zigbee_indisponiveis
+    name: Zigbee fora do ar
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: red
+    visibility:
+    - condition: numeric_state
+      entity: sensor.zigbee_indisponiveis
+      above: 0
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Alarme
+      icon: mdi:shield-home
+    - type: alarm-panel
+      entity: alarm_control_panel.alarme_casa
+      name: Alarme casa
+      states:
+      - arm_home
+      - arm_night
+      - arm_away
+      grid_options:
+        columns: full
+    - type: markdown
+      content: |
+        🌙 **Modo noite automático**: arma às **00:00** e desarma às **07:30**.
+        À noite não toca som; pessoa liga a luz e notifica, animal só vai para o registro.
+  - type: grid
+    cards:
+    - type: heading
+      heading: Campainha
+      icon: mdi:doorbell
+    - type: tile
+      entity: sensor.ultima_campainha
+      name: Última vez
+      icon: mdi:doorbell-video
+      color: blue
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: counter.campainha_hoje
+      name: Toques hoje
+      icon: mdi:counter
+      color: blue
+      grid_options:
+        columns: 6
+    - type: markdown
+      content: |
+        {% set s = states.sensor.ultima_campainha %} {% if s and s.state not in ['unknown', 'unavailable'] %} {% set m = ((now() - as_datetime(s.state)).total_seconds() // 60) | int %} 🔔 Tocou **{{ 'agora há pouco' if m < 1 else ('há ' ~ m ~ ' min' if m < 60 else ('há ' ~ (m // 60) ~ ' h' if m < 1440 else 'há ' ~ (m // 1440) ~ ' dia(s)')) }}** ({{ as_local(as_datetime(s.state)).strftime('%d/%m às %H:%M') }}), {{ s.attributes.tipo }}{{ ', luz do corredor ligada por 1 min' if s.attributes.luz else '' }}. {% else %} 🔔 A campainha ainda não tocou. {% endif %}
+    - type: button
+      name: Testar campainha
+      icon: mdi:doorbell
+      tap_action:
+        action: perform-action
+        perform_action: script.campainha_tocar
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: button
+      entity: switch.lampada_corredor_socket_1
+      name: Luz do corredor
+      icon: mdi:lightbulb
+      show_state: true
+      tap_action:
+        action: toggle
+      grid_options:
+        columns: 6
+        rows: 2
+  - type: grid
+    cards:
+    - type: heading
+      heading: Hoje
+      icon: mdi:calendar-today
+    - type: tile
+      entity: counter.eventos_possivel_humano
+      name: Possível pessoa
+      icon: mdi:human-handsdown
+      color: red
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: counter.eventos_possivel_animal
+      name: Possível animal
+      icon: mdi:cat
+      color: amber
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.disparos_do_alarme_hoje
+      name: Disparos do alarme
+      icon: mdi:alarm-light
+      color: red
+      grid_options:
+        columns: full
+    - type: history-graph
+      title: Detecções nas últimas 24 h
+      hours_to_show: 24
+      entities:
+      - entity: binary_sensor.area_externa_sensor_de_passagem_novo
+        name: Passagem
+      - entity: binary_sensor.lateral_casa
+        name: Lateral
+      - entity: binary_sensor.fundos_casa
+        name: Fundos
+      - entity: alarm_control_panel.alarme_casa
+        name: Alarme
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Registro do alarme armado
+      icon: mdi:shield-alert
+    - type: markdown
+      grid_options:
+        columns: full
+      content: |
+        {%- set ev = (state_attr('sensor.registro_do_alarme_armado', 'eventos') or [])[:50] %}
+        {%- if not ev %}
+        Nenhum evento com o alarme armado ainda.
+        {%- else %}
+        {%- set h = ev | selectattr('tipo', 'eq', 'humano') | list | count %}
+        <ha-alert alert-type="info">Últimos <b>{{ ev | count }}</b> eventos · 🧍 <b>{{ h }}</b> possível humano · 🐈 <b>{{ ev | count - h }}</b> possível animalzinho</ha-alert>
+        {%- set today = now().strftime('%d/%m') %}
+        {%- set yesterday = (now() - timedelta(days=1)).strftime('%d/%m') %}
+        {%- for day in ev | map(attribute='hora') | map('truncate', 5, true, '') | unique %}
+        {%- set items = ev | selectattr('hora', 'search', '^' ~ day) | list %}
+        {%- set hd = items | selectattr('tipo', 'eq', 'humano') | list | count %}
+        {#- Merge consecutive events with the same type and sensors. #}
+        {%- set ns = namespace(groups=[], cur=none) %}
+        {%- for e in items %}
+        {%- if ns.cur and ns.cur.tipo == e.tipo and ns.cur.sensores == e.sensores %}
+        {%- set ns.cur = dict(ns.cur, first=e.hora[6:11], n=ns.cur.n + 1) %}
+        {%- else %}
+        {%- if ns.cur %}{% set ns.groups = ns.groups + [ns.cur] %}{% endif %}
+        {%- set ns.cur = {'tipo': e.tipo, 'sensores': e.sensores, 'last': e.hora[6:11], 'first': e.hora[6:11], 'n': 1} %}
+        {%- endif %}
+        {%- endfor %}
+        {%- set ns.groups = ns.groups + [ns.cur] %}
+        <details{{ ' open' if loop.first }}><summary><b>📅 {{ 'Hoje' if day == today else ('Ontem' if day == yesterday else day) }}</b> — {{ items | count }} evento(s){{ ' · 🧍 ' ~ hd if hd }}</summary>
+        <table width="100%">
+        <tr><th></th><th align="left">Hora</th><th align="left">Sensores</th><th align="right">Vezes</th></tr>
+        {%- for g in ns.groups %}
+        <tr><td>{{ '🧍' if g.tipo == 'humano' else '🐈' }}</td><td>{{ g.last if g.n == 1 else g.first ~ '–' ~ g.last }}</td><td>{{ '<b>' ~ g.sensores ~ '</b>' if g.tipo == 'humano' else g.sensores }}</td><td align="right">{{ '×' ~ g.n if g.n > 1 else '' }}</td></tr>
+        {%- endfor %}
+        </table>
+        </details>
+        {%- endfor %}
+        {%- endif %}
+  - type: grid
+    cards:
+    - type: heading
+      heading: Baixar registro
+      icon: mdi:file-download
+    - type: entities
+      entities:
+      - entity: input_datetime.alarme_export_inicio
+        name: De
+      - entity: input_datetime.alarme_export_fim
+        name: Até
+    - type: button
+      name: Gerar arquivo
+      icon: mdi:file-export
+      tap_action:
+        action: perform-action
+        perform_action: script.alarme_exportar_registro
+      grid_options:
+        columns: full
+        rows: 2
+    - type: markdown
+      content: |-
+        {% set v = states('input_text.alarme_ultimo_export') %} {% if '|' in v %} {% set path, rows = v.split('|') %} [⬇️ **Baixar CSV**]({{ path }}) — {{ rows }} evento(s). O link expira em 24 h. {% else %} Escolha o período e toque em **Gerar arquivo**. {% endif %}
+    - type: heading
+      heading: Últimos eventos
+      icon: mdi:history
+      heading_style: subtitle
+    - type: logbook
+      hours_to_show: 24
+      target:
+        entity_id:
+        - counter.eventos_possivel_humano
+        - counter.eventos_possivel_animal
+        - alarm_control_panel.alarme_casa
+        - switch.lampada_corredor_socket_1
+        - script.campainha_tocar
+- title: Ajustes
+  path: ajustes
+  icon: mdi:tune
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Sons no notebook
+      icon: mdi:volume-high
+    - type: tile
+      entity: input_boolean.alarme_som_notebook
+      name: Som no notebook
+      icon: mdi:volume-high
+      grid_options:
+        columns: full
+    - type: tile
+      entity: input_select.alarme_som_pessoa
+      name: Som de pessoa
+      features:
+      - type: select-options
+      grid_options:
+        columns: full
+    - type: button
+      name: Testar som de pessoa
+      icon: mdi:human-handsdown
+      tap_action:
+        action: perform-action
+        perform_action: script.alarme_som_pessoa
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: button
+      name: Testar som de animal
+      icon: mdi:cat
+      tap_action:
+        action: perform-action
+        perform_action: script.alarme_som_animal
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: button
+      name: Testar campainha
+      icon: mdi:doorbell
+      tap_action:
+        action: perform-action
+        perform_action: script.campainha_tocar
+      grid_options:
+        columns: full
+        rows: 2
+  - type: grid
+    cards:
+    - type: heading
+      heading: Classificação pessoa × animal
+      icon: mdi:tune-variant
+    - type: entities
+      entities:
+      - entity: input_number.alarme_janela_confirmacao
+        name: Janela para 2 sensores (min)
+      - entity: input_number.alarme_tempo_presenca
+        name: Presença contínua = pessoa (s)
+      - entity: input_number.alarme_intervalo_aviso_animal
+        name: Intervalo entre avisos de animal (min)
+      - entity: number.area_externa_sensor_de_passagem_novo_sensitivity
+        name: Sensibilidade do radar (0-10)
+      - entity: input_boolean.alarme_radar_confirma
+        name: Radar confirma pessoa
+    - type: markdown
+      content: |
+        **Possível pessoa**: Lateral + Fundos dentro da janela (o radar só conta com "Radar confirma pessoa" ligado), ou o mesmo sensor detectando direto pelo tempo de presença. Com o alarme armado: dispara, liga a luz e notifica.
 
-              **Possível animalzinho**: detecção isolada. Com o alarme
-              armado, só notifica, no máximo uma vez por intervalo.
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Registro do alarme armado
-            icon: mdi:shield-alert
-          - type: markdown
-            grid_options:
-              columns: full
-            content: |
-              {%- set ev = (state_attr('sensor.registro_do_alarme_armado', 'eventos') or [])[:50] %}
-              {%- if not ev %}
-              Nenhum evento com o alarme armado ainda.
-              {%- else %}
-              {%- set h = ev | selectattr('tipo', 'eq', 'humano') | list | count %}
-              <ha-alert alert-type="info">Últimos <b>{{ ev | count }}</b> eventos · 🧍 <b>{{ h }}</b> possível humano · 🐈 <b>{{ ev | count - h }}</b> possível animalzinho</ha-alert>
-              {%- set today = now().strftime('%d/%m') %}
-              {%- set yesterday = (now() - timedelta(days=1)).strftime('%d/%m') %}
-              {%- for day in ev | map(attribute='hora') | map('truncate', 5, true, '') | unique %}
-              {%- set items = ev | selectattr('hora', 'search', '^' ~ day) | list %}
-              {%- set hd = items | selectattr('tipo', 'eq', 'humano') | list | count %}
-              {#- Merge consecutive events with the same type and sensors. #}
-              {%- set ns = namespace(groups=[], cur=none) %}
-              {%- for e in items %}
-              {%- if ns.cur and ns.cur.tipo == e.tipo and ns.cur.sensores == e.sensores %}
-              {%- set ns.cur = dict(ns.cur, first=e.hora[6:11], n=ns.cur.n + 1) %}
-              {%- else %}
-              {%- if ns.cur %}{% set ns.groups = ns.groups + [ns.cur] %}{% endif %}
-              {%- set ns.cur = {'tipo': e.tipo, 'sensores': e.sensores, 'last': e.hora[6:11], 'first': e.hora[6:11], 'n': 1} %}
-              {%- endif %}
-              {%- endfor %}
-              {%- set ns.groups = ns.groups + [ns.cur] %}
-              <details{{ ' open' if loop.first }}><summary><b>📅 {{ 'Hoje' if day == today else ('Ontem' if day == yesterday else day) }}</b> — {{ items | count }} evento(s){{ ' · 🧍 ' ~ hd if hd }}</summary>
-              <table width="100%">
-              <tr><th></th><th align="left">Hora</th><th align="left">Sensores</th><th align="right">Vezes</th></tr>
-              {%- for g in ns.groups %}
-              <tr><td>{{ '🧍' if g.tipo == 'humano' else '🐈' }}</td><td>{{ g.last if g.n == 1 else g.first ~ '–' ~ g.last }}</td><td>{{ '<b>' ~ g.sensores ~ '</b>' if g.tipo == 'humano' else g.sensores }}</td><td align="right">{{ '×' ~ g.n if g.n > 1 else '' }}</td></tr>
-              {%- endfor %}
-              </table>
-              </details>
-              {%- endfor %}
-              {%- endif %}
-      - type: grid
-        cards:
-          - type: heading
-            heading: Baixar registro
-            icon: mdi:file-download
-          - type: entities
-            entities:
-              - entity: input_datetime.alarme_export_inicio
-                name: De
-              - entity: input_datetime.alarme_export_fim
-                name: Até
-          - type: button
-            name: Gerar arquivo
-            icon: mdi:file-export
-            tap_action:
-              action: perform-action
-              perform_action: script.alarme_exportar_registro
-            grid_options:
-              columns: full
-              rows: 2
-          - type: markdown
-            content: >-
-              {% set v = states('input_text.alarme_ultimo_export') %}
-              {% if '|' in v %}
-              {% set path, rows = v.split('|') %}
-              [⬇️ **Baixar CSV**]({{ path }}) — {{ rows }} evento(s).
-              O link expira em 24 h.
-              {% else %}
-              Escolha o período e toque em **Gerar arquivo**.
-              {% endif %}
+        **Possível animal**: detecção isolada. Com o alarme armado: só notifica, no máximo uma vez por intervalo (e nada à noite).
+  - type: grid
+    cards:
+    - type: heading
+      heading: Detecções por sensor (hoje)
+      icon: mdi:motion-sensor
+    - type: tile
+      entity: sensor.eventos_hoje_total
+      name: Total
+      icon: mdi:motion-sensor
+      grid_options:
+        columns: full
+    - type: tile
+      entity: sensor.eventos_hoje_sensor_de_passagem
+      name: Passagem
+      icon: mdi:walk
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.eventos_hoje_lateral_casa
+      name: Lateral
+      icon: mdi:motion-sensor
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.eventos_hoje_fundos_casa
+      name: Fundos
+      icon: mdi:motion-sensor
+      grid_options:
+        columns: 4
+    - type: logbook
+      title: Toques da campainha (48 h)
+      hours_to_show: 48
+      target:
+        entity_id:
+        - script.campainha_tocar

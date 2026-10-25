@@ -167,8 +167,8 @@ lovelace:
     # YAML dashboard, versioned in git (config/dashboards/alarme.yaml).
     dashboard-alarme:
       mode: yaml
-      title: Alarme
-      icon: mdi:shield-home
+      title: Casa
+      icon: mdi:home
       show_in_sidebar: true
       filename: dashboards/alarme.yaml
 
