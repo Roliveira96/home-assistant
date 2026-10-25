@@ -38,5 +38,5 @@ campainha_tocar:
   - action: shell_command.alarme_tocar_som
     data:
       file: /config/sounds/ding-dong.wav
-      volume: 1.0
+      volume: 1.8
       loops: 1
