@@ -40,3 +40,5 @@ config/alarme/*.csv
 
 # Photo sync lock
 config/fotos/.sync.lock
+config/fotos/current.jpg
+config/fotos/.last

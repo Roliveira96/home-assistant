@@ -1,32 +1,39 @@
-"""Print a random photo path from /config/media/fotos and its subfolders
-(different from the current one).
+"""Show the next random photo in the photo frame.
 
-Usage: next_photo.py [current_path]
-Used by the photo frame automation to rotate the local_file camera.
+Picks a random photo from /config/media/fotos and its subfolders (different
+from the previous one) and copies it over CURRENT, the fixed file the
+local_file camera (camera.porta_retrato) always points to. Keeping the camera
+on a fixed path means it never ends up pointing at a photo that was deleted.
+Prints the chosen photo.
 """
 
 import pathlib
 import random
+import shutil
 import sys
 
 FOLDER = pathlib.Path("/config/media/fotos")
+CURRENT = pathlib.Path("/config/fotos/current.jpg")
+LAST = pathlib.Path("/config/fotos/.last")
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
 
-def main(argv: list[str]) -> int:
-    current = argv[1] if len(argv) > 1 else ""
+def main() -> int:
     photos = sorted(
         str(p) for p in FOLDER.rglob("*") if p.is_file() and p.suffix.lower() in EXTENSIONS
     )
-    # Hide the placeholder once real photos exist.
-    real = [p for p in photos if not pathlib.Path(p).name.startswith("00-placeholder")]
-    photos = real or photos
     if not photos:
+        print("no photos found", file=sys.stderr)
         return 1
-    choices = [p for p in photos if p != current] or photos
-    print(random.choice(choices))
+    last = LAST.read_text().strip() if LAST.exists() else ""
+    choice = random.choice([p for p in photos if p != last] or photos)
+    partial = CURRENT.with_suffix(".part")
+    shutil.copyfile(choice, partial)
+    partial.replace(CURRENT)
+    LAST.write_text(choice)
+    print(choice)
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

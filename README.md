@@ -122,8 +122,8 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 - **Fotos do notebook**: a pasta `~/Pictures` (na rede: `\\192.168.3.111\ricardo\Pictures`) é montada só leitura no container em `/pictures`. A automação "Porta-retrato - sincronizar fotos do notebook" (ao iniciar o HA e de hora em hora, no minuto 5) roda `config/fotos/sync_photos.py`, que grava cópias **otimizadas** (máx. 1600 px, rotação EXIF aplicada, ~240 KB) em `config/media/fotos/otimizadas` e remove as que não existem mais na origem. Subpastas como `Screenshots` são ignoradas.
 - **Fotos enviadas pela interface**: **Mídia → Minha mídia → fotos → Enviar** (`homeassistant: media_dirs: local: /config/media`).
 - Tudo em `config/media/` fica fora do git.
-- `camera.porta_retrato` é uma câmera `local_file` (criada pela interface); a automação "Porta-retrato - trocar foto" chama `shell_command.fotos_proxima` (`config/fotos/next_photo.py`, sorteia outra foto de `media/fotos` e subpastas) a cada 20 s e aplica com `local_file.update_file_path`.
-- A imagem passa pelo proxy de câmera do HA, que exige login (nada fica em `/local`). O `00-placeholder.jpg` só aparece enquanto não houver fotos.
+- `camera.porta_retrato` é uma câmera `local_file` (criada pela interface) que aponta **sempre** para o arquivo fixo `config/fotos/current.jpg`. A automação "Porta-retrato - trocar foto" chama `shell_command.fotos_proxima` (`config/fotos/next_photo.py`) a cada 20 s, que sorteia outra foto de `media/fotos` e subpastas e a copia por cima do `current.jpg`. (Apontar a câmera direto para as fotos quebrava: se a foto exibida fosse apagada, a integração não subia mais.)
+- A imagem passa pelo proxy de câmera do HA, que exige login (nada fica em `/local`). 
 
 ## Alarme
 

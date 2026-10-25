@@ -292,7 +292,8 @@ shell_command:
   # Armed-alarm CSV history and period export (config/alarme/alarm_log.py).
   alarme_log_append: python3 /config/alarme/alarm_log.py append "{{ tipo }}" "{{ sensores }}"
   alarme_log_export: python3 /config/alarme/alarm_log.py export "{{ start }}" "{{ end }}"
-  # Prints a random photo path for the photo frame (config/fotos/next_photo.py).
-  fotos_proxima: python3 /config/fotos/next_photo.py "{{ current | default('') }}"
+  # Copies a random photo to config/fotos/current.jpg, shown by camera.porta_retrato
+  # (config/fotos/next_photo.py).
+  fotos_proxima: python3 /config/fotos/next_photo.py
   # Resized copies of ~/Pictures for the photo frame (config/fotos/sync_photos.py).
   fotos_sincronizar: python3 /config/fotos/sync_photos.py

@@ -403,24 +403,14 @@
   max: 20
 - id: '1792500000010'
   alias: Porta-retrato - trocar foto
-  description: A cada 20 s sorteia outra foto de media/fotos e mostra na câmera camera.porta_retrato
-    (painel Casa).
+  description: A cada 20 s copia outra foto sorteada de media/fotos para config/fotos/current.jpg,
+    o arquivo fixo exibido pela câmera camera.porta_retrato (painel Casa).
   triggers:
   - trigger: time_pattern
     seconds: /20
   conditions: []
   actions:
   - action: shell_command.fotos_proxima
-    data:
-      current: '{{ state_attr(''camera.porta_retrato'', ''file_path'') }}'
-    response_variable: result
-  - condition: template
-    value_template: '{{ result.returncode == 0 and result.stdout | length > 0 }}'
-  - action: local_file.update_file_path
-    target:
-      entity_id: camera.porta_retrato
-    data:
-      file_path: '{{ result.stdout | trim }}'
   mode: single
   max_exceeded: silent
 - id: '1792500000011'
