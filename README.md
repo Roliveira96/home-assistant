@@ -189,6 +189,7 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Automação sensor lateral casa | Sensor de presença lateral ocupado após as 18h → liga o interruptor |
 | Area Externa | Gatilho de dispositivo entre 18h e 08h → liga o mesmo interruptor |
 | Nova automação | Botão pressionado → ainda sem ação (rascunho) |
+| Campainha - botão | **Botão Campainha**: 1 clique → ding-dong 2x no notebook + notificação; 2 cliques → a partir das 18h (até 06h) também liga a lampada corredor. Cada toque toca de novo (fila). O ZG-101ZL aparece no ZHA como interruptor: 1 clique = `toggle`, 2 cliques = `on`, segurar = `off` (evento `zha_event`) |
 | Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
 | Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
 

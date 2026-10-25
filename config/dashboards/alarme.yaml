@@ -55,6 +55,15 @@ views:
             grid_options:
               columns: 6
               rows: 2
+          - type: button
+            name: Testar campainha
+            icon: mdi:doorbell
+            tap_action:
+              action: perform-action
+              perform_action: script.campainha_tocar
+            grid_options:
+              columns: full
+              rows: 2
           - type: markdown
             content: >
               🌙 **Modo noite automático**: arma às **00:00** e desarma às
@@ -136,6 +145,7 @@ views:
                 - binary_sensor.lateral_casa
                 - binary_sensor.fundos_casa
                 - switch.lampada_corredor_socket_1
+                - script.campainha_tocar
       - type: grid
         cards:
           - type: heading

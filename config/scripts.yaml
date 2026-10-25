@@ -31,3 +31,20 @@ alarme_som_animal:
     data:
       file: /sounds/freedesktop/stereo/bell.oga
       volume: 2.0
+campainha_tocar:
+  alias: Tocar campainha
+  description: Toca o ding-dong no notebook 2 vezes seguidas (campainha).
+  icon: mdi:doorbell
+  mode: queued
+  max: 10
+  sequence:
+  - repeat:
+      count: 2
+      sequence:
+      - action: shell_command.alarme_tocar_som
+        data:
+          file: /config/sounds/ding-dong.wav
+          volume: 1.0
+      # ffmpeg returns once the audio is queued; wait for it to finish.
+      - delay:
+          seconds: 2.5
