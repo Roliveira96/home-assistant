@@ -85,7 +85,7 @@ views:
               {% if s and s.state not in ['unknown', 'unavailable'] %}
               🔔 Tocou **{{ relative_time(as_datetime(s.state)) }} atrás**
               ({{ as_local(as_datetime(s.state)).strftime('%d/%m às %H:%M') }}),
-              {{ s.attributes.tipo }}{{ ', luz do corredor ligada' if s.attributes.luz else '' }}.
+              {{ s.attributes.tipo }}{{ ', luz do corredor ligada por 1 min' if s.attributes.luz else '' }}.
               {% else %}
               🔔 A campainha ainda não tocou.
               {% endif %}
