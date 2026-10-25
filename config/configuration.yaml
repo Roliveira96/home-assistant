@@ -46,3 +46,22 @@ template:
               {% endif %}
             {% endfor %}
             {{ ns.names }}
+
+zha:
+  # Local quirks for devices ZHA does not support out of the box.
+  custom_quirks_path: /config/custom_zha_quirks/
+
+alarm_control_panel:
+  # Local alarm panel; armed/disarmed from the dashboard or the phone app.
+  - platform: manual
+    name: Alarme casa
+    unique_id: alarme_casa
+    code_arm_required: false
+    # Exit delay when arming "away"; "home" arms immediately.
+    arming_time: 30
+    delay_time: 0
+    # Stays in "triggered" for 5 min, then goes back to armed.
+    trigger_time: 300
+    disarm_after_trigger: false
+    armed_home:
+      arming_time: 0

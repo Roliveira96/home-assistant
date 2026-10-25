@@ -26,3 +26,6 @@ config/*.bak-*
 # Google service account keys (google_assistant integration)
 *service_account*.json
 config/*.json
+
+# Python bytecode (custom ZHA quirks)
+__pycache__/

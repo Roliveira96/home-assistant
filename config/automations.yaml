@@ -112,3 +112,45 @@
           title: Zigbee normalizado
           message: Todos os dispositivos Zigbee voltaram a funcionar.
   mode: queued
+- id: '1792500000003'
+  alias: Alarme - movimento com alarme armado
+  description: Com o Alarme casa armado, se o Sensor de passagem novo, Lateral casa
+    ou Fundos Casa detectar algo, dispara o alarme, liga a lampada corredor e notifica
+    o celular.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.area_externa_sensor_de_passagem_novo
+    - binary_sensor.lateral_casa
+    - binary_sensor.fundos_casa
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: alarm_control_panel.alarme_casa
+    state:
+    - armed_away
+    - armed_home
+    - armed_night
+    - armed_vacation
+    - triggered
+  actions:
+  - action: alarm_control_panel.alarm_trigger
+    target:
+      entity_id: alarm_control_panel.alarme_casa
+  - action: switch.turn_on
+    target:
+      entity_id: switch.lampada_corredor_socket_1
+  - action: notify.mobile_app_android_ricardo
+    data:
+      title: 🚨 Alarme disparado
+      message: '{{ trigger.to_state.name }} detectou movimento às {{ now().strftime(''%H:%M'')
+        }}.'
+      data:
+        priority: high
+        ttl: 0
+  # Ignore further detections for 1 min to avoid a burst of notifications.
+  - delay:
+      minutes: 1
+  mode: single
+  max_exceeded: silent

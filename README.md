@@ -108,6 +108,25 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 - Ativar **autenticação em dois fatores** no perfil de cada usuário do HA, já que a página de login ficará exposta na internet.
 - Opcional: proteger com **Cloudflare Access**. Atenção: o Access bloqueia o app Companion do celular, a não ser que se configure uma regra de bypass ou mTLS.
 
+## Alarme
+
+`alarm_control_panel.alarme_casa` usa a plataforma `manual` (definida em `configuration.yaml`), sem código:
+
+| Modo | Atraso para armar | Uso |
+|---|---|---|
+| Armar ausente (`armed_away`) | 30 s (tempo para sair) | ninguém em casa |
+| Armar em casa (`armed_home`) | imediato | à noite, com gente em casa |
+
+Disparado, fica em `triggered` por 5 min e volta para armado. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
+
+## Quirks Zigbee próprios
+
+Dispositivos que o ZHA não reconhece sozinho ganham um *quirk* em `config/custom_zha_quirks/` (ativado por `zha: custom_quirks_path` no `configuration.yaml`). Depois de criar ou mudar um quirk é preciso reiniciar o HA.
+
+| Arquivo | Dispositivo |
+|---|---|
+| `ts0601_tze284_gnpflcoq.py` | Tuya 4-in-1 mmWave (TS0601 `_TZE284_gnpflcoq`), o "Sensor de passagem novo": presença, temperatura, umidade, luminosidade, bateria, sensibilidade e tempo de desvanecimento. Datapoints tirados do Zigbee2MQTT |
+
 ## Backup e restauração
 
 - O HA faz backups automáticos em `config/backups/` (fora do git). Os backups são **criptografados**; a chave fica no *kit de emergência*, que deve ser guardado num gerenciador de senhas, **nunca** no repositório.
@@ -125,6 +144,8 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Nova automação | Botão pressionado → ainda sem ação (rascunho) |
 | Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
 | Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
+
+| Alarme - movimento com alarme armado | Com o **Alarme casa** armado, movimento no Sensor de passagem novo, Lateral casa ou Fundos Casa → dispara o alarme, liga a **lampada corredor** (Tuya) e notifica o celular (prioridade alta). Ignora novas detecções por 1 min |
 
 As notificações vão para `notify.mobile_app_android_ricardo` (app Companion no celular Android do Ricardo).
 
@@ -202,6 +223,6 @@ Pontos a decidir:
 
 1. Qual opção usar.
 2. Quais entidades expor: só o que faz sentido controlar ou ver por voz (luzes, interruptores, temperatura); sensores técnicos ficam de fora.
-3. Nomes e cômodos: o Google usa o nome e a área de cada entidade, então vale revisar os nomes no HA antes (ex.: "Fundos Cadas").
+3. Nomes e cômodos: o Google usa o nome e a área de cada entidade, então vale revisar os nomes no HA antes (ex.: "Fundos Casa").
 
 Observação: a integração `google_cloud` (texto para voz) que já existe é outra coisa e hoje dá erro 403 porque a API Text-to-Speech não está ativada no projeto do Google Cloud.
