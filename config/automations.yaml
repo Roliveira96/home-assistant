@@ -423,3 +423,25 @@
       file_path: '{{ result.stdout | trim }}'
   mode: single
   max_exceeded: silent
+- id: '1792500000011'
+  alias: Porta-retrato - sincronizar fotos do notebook
+  description: De hora em hora (e ao iniciar o HA) copia as fotos de ~/Pictures do
+    notebook, reduzidas, para media/fotos.
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: 5
+  conditions: []
+  actions:
+  - action: shell_command.fotos_sincronizar
+    response_variable: result
+  - if:
+    - condition: template
+      value_template: '{{ result.returncode != 0 }}'
+    then:
+    - action: logbook.log
+      data:
+        name: Porta-retrato
+        message: 'falha ao sincronizar: {{ result.stderr[:200] }}'
+  mode: single

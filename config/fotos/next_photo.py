@@ -1,4 +1,5 @@
-"""Print a random photo path from /config/media/fotos (different from the current one).
+"""Print a random photo path from /config/media/fotos and its subfolders
+(different from the current one).
 
 Usage: next_photo.py [current_path]
 Used by the photo frame automation to rotate the local_file camera.
@@ -15,7 +16,7 @@ EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 def main(argv: list[str]) -> int:
     current = argv[1] if len(argv) > 1 else ""
     photos = sorted(
-        str(p) for p in FOLDER.iterdir() if p.is_file() and p.suffix.lower() in EXTENSIONS
+        str(p) for p in FOLDER.rglob("*") if p.is_file() and p.suffix.lower() in EXTENSIONS
     )
     # Hide the placeholder once real photos exist.
     real = [p for p in photos if not pathlib.Path(p).name.startswith("00-placeholder")]

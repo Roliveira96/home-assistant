@@ -37,3 +37,6 @@ config/media/
 # Alarm event history (private)
 config/alarme/*.csv
 
+
+# Photo sync lock
+config/fotos/.sync.lock

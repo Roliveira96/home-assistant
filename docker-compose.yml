@@ -14,6 +14,9 @@ services:
       # so a PipeWire restart does not leave a stale bind mount.
       - /run/user/1000/pulse:/run/pulse
       - /usr/share/sounds:/sounds:ro
+      # Notebook photos (also shared on the LAN as \\192.168.3.111\ricardo\Pictures),
+      # read-only; config/fotos/sync_photos.py makes resized copies for the photo frame.
+      - /home/ricardo/Pictures:/pictures:ro
     environment:
       - PULSE_SERVER=unix:/run/pulse/native
     # Needed by the Bluetooth integration to manage the adapter over D-Bus.

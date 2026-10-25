@@ -294,3 +294,5 @@ shell_command:
   alarme_log_export: python3 /config/alarme/alarm_log.py export "{{ start }}" "{{ end }}"
   # Prints a random photo path for the photo frame (config/fotos/next_photo.py).
   fotos_proxima: python3 /config/fotos/next_photo.py "{{ current | default('') }}"
+  # Resized copies of ~/Pictures for the photo frame (config/fotos/sync_photos.py).
+  fotos_sincronizar: python3 /config/fotos/sync_photos.py
