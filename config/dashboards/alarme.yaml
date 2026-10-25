@@ -151,6 +151,83 @@ views:
       - entity: alarm_control_panel.alarme_casa
         name: Alarme
   - type: grid
+    cards:
+    - type: heading
+      heading: Clima e temperatura
+      icon: mdi:weather-partly-cloudy
+    - type: weather-forecast
+      entity: weather.forecast_casa
+      name: Casa
+      show_current: true
+      show_forecast: true
+      forecast_type: daily
+      grid_options:
+        columns: full
+    - type: tile
+      entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+      name: Área externa
+      icon: mdi:home-thermometer-outline
+      color: deep-orange
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+      name: Escritório 1
+      icon: mdi:thermometer
+      color: orange
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_temperatura
+      name: Escritório 2
+      icon: mdi:thermometer
+      color: orange
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.area_externa_sensor_de_passagem_novo_umidade
+      name: Umid. externa
+      icon: mdi:water-percent
+      color: light-blue
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_e_umidade_umidade
+      name: Umid. escrit. 1
+      icon: mdi:water-percent
+      color: light-blue
+      grid_options:
+        columns: 4
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_umidade
+      name: Umid. escrit. 2
+      icon: mdi:water-percent
+      color: light-blue
+      grid_options:
+        columns: 4
+    - type: history-graph
+      title: Temperatura nas últimas 24 h
+      hours_to_show: 24
+      entities:
+      - entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+        name: Área externa
+      - entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+        name: Escritório 1
+      - entity: sensor.escritorio_medidor_de_temperatura_temperatura
+        name: Escritório 2
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Agenda
+      icon: mdi:calendar
+    - type: calendar
+      entities:
+      - calendar.casa
+      initial_view: listWeek
+      grid_options:
+        columns: full
+  - type: grid
     column_span: 2
     cards:
     - type: heading
@@ -213,8 +290,8 @@ views:
         columns: full
         rows: 2
     - type: markdown
-      content: |-
-        {% set v = states('input_text.alarme_ultimo_export') %} {% if '|' in v %} {% set path, rows = v.split('|') %} [⬇️ **Baixar CSV**]({{ path }}) — {{ rows }} evento(s). O link expira em 24 h. {% else %} Escolha o período e toque em **Gerar arquivo**. {% endif %}
+      content: '{% set v = states(''input_text.alarme_ultimo_export'') %} {% if ''|'' in v %} {% set path, rows = v.split(''|'') %} [⬇️ **Baixar CSV**]({{ path }}) — {{ rows }} evento(s). O link expira
+        em 24 h. {% else %} Escolha o período e toque em **Gerar arquivo**. {% endif %}'
     - type: heading
       heading: Últimos eventos
       icon: mdi:history
