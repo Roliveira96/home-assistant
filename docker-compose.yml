@@ -9,6 +9,10 @@ services:
       - ./config:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
+    # Needed by the Bluetooth integration to manage the adapter over D-Bus.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     devices:
       # Sonoff Zigbee 3.0 USB Dongle Plus V2, used by the ZHA integration.
       - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_686e6746c078f011af23f2eba7772636-if00-port0:/dev/ttyUSB0
