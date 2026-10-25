@@ -85,21 +85,21 @@ O container antigo foi criado com `docker run` usando o caminho de exemplo da do
 
 ## Cloudflare Tunnel (acesso de qualquer lugar)
 
-O `cloudflared` abre uma conexão de saída até a Cloudflare, então **não é preciso abrir porta no roteador** nem ter IP fixo. Pré-requisito: um domínio gerenciado pela Cloudflare.
+O `cloudflared` abre uma conexão de saída até a Cloudflare, então **não é preciso abrir porta no roteador** nem ter IP fixo. Domínio: `rmo.dev.br` (DNS na Cloudflare). Endereço: **https://casa.rmo.dev.br**.
 
-1. No painel da Cloudflare: **Zero Trust → Networks → Tunnels → Create a tunnel → Cloudflared**. Dê um nome (ex.: `casa`).
-2. Na tela de instalação, escolha **Docker** e copie só o token (o texto depois de `--token`). Coloque em `.env`:
+1. No painel da Cloudflare (dash.cloudflare.com): **Networking → Tunnels → Create a tunnel**. Nome: `casa` → **Create Tunnel**.
+2. Escolha **Docker** e copie só o token do comando exibido (o texto depois de `--token`, começa com `eyJ`). Não rode o comando; coloque o token no `.env`:
 
    ```
    COMPOSE_PROFILES=tunnel
    TUNNEL_TOKEN=<token>
    ```
 
-3. Em **Public Hostname**, adicione:
-   - Subdomínio: `casa` (ou outro), domínio: o seu
-   - Service: `HTTP` → `localhost:9999`
-4. Subir o túnel: `docker compose up -d cloudflared` e acompanhar com `docker compose logs -f cloudflared`.
-5. No Home Assistant, em **Configurações → Sistema → Rede**, preencher a URL da Internet com `https://casa.seudominio.com.br`.
+3. Em seguida, na aba **Routes** do túnel: **Add route → Published application**:
+   - Subdomain: `casa` · Domain: `rmo.dev.br`
+   - Service URL: `http://localhost:9999`
+4. Subir o túnel (a tela da Cloudflare espera a conexão; depois clique em **Continue**): `docker compose up -d cloudflared` e acompanhar com `docker compose logs -f cloudflared`.
+5. No Home Assistant, em **Configurações → Sistema → Rede**, preencher a URL da Internet com `https://casa.rmo.dev.br`.
 
 O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.0.1 e ::1). Sem isso, o HA responde `400 Bad Request` às requisições que chegam pelo túnel.
 
