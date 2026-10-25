@@ -1,0 +1,33 @@
+alarme_som_pessoa:
+  alias: Tocar som de pessoa
+  description: Toca no notebook o som escolhido em "Som de pessoa" (2 vezes).
+  icon: mdi:human-handsdown
+  mode: single
+  sequence:
+  - variables:
+      files:
+        Ding-dong: /config/sounds/ding-dong.wav
+        Mensagem: /sounds/freedesktop/stereo/message-new-instant.oga
+        Login: /sounds/freedesktop/stereo/service-login.oga
+        Despertador: /sounds/freedesktop/stereo/alarm-clock-elapsed.oga
+  - repeat:
+      count: 2
+      sequence:
+      - action: shell_command.alarme_tocar_som
+        data:
+          file: '{{ files.get(states(''input_select.alarme_som_pessoa''), files[''Ding-dong''])
+            }}'
+          volume: 0.6
+      # ffmpeg returns once the audio is queued; wait for it to finish.
+      - delay:
+          seconds: 2.5
+alarme_som_animal:
+  alias: Tocar som de animal
+  description: Toca no notebook o sino baixo usado para "possível animalzinho".
+  icon: mdi:cat
+  mode: single
+  sequence:
+  - action: shell_command.alarme_tocar_som
+    data:
+      file: /sounds/freedesktop/stereo/bell.oga
+      volume: 0.8

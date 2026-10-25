@@ -110,6 +110,9 @@ alarm_control_panel:
     disarm_after_trigger: false
     armed_home:
       arming_time: 0
+    # Armed automatically at midnight and disarmed at 07:30 (see automations).
+    armed_night:
+      arming_time: 0
 
 sensor:
   # Today's detection counts (since midnight) for the alarm dashboard.
@@ -184,7 +187,23 @@ input_number:
     unit_of_measurement: min
     mode: slider
 
+input_select:
+  # Sound played on the notebook for "possível humano" (alarme_som_pessoa).
+  alarme_som_pessoa:
+    name: Som de pessoa
+    icon: mdi:music-note
+    options:
+      - Ding-dong
+      - Mensagem
+      - Login
+      - Despertador
+
 input_boolean:
+  # The radar (Sensor de passagem novo) pulses every ~61 s, so it is "recently
+  # detected" almost all the time; while off it does not confirm a human.
+  alarme_radar_confirma:
+    name: Radar confirma humano
+    icon: mdi:radar
   # Plays sounds on the notebook for classified detections while armed.
   alarme_som_notebook:
     name: Som no notebook
@@ -208,10 +227,11 @@ counter:
     restore: true
 
 shell_command:
-  # Plays a system sound on the notebook speakers through PipeWire.
-  # Variables: sound (file name without .oga), volume (0.0-1.0).
+  # Plays a sound file on the notebook speakers through PipeWire.
+  # Variables: file (path inside the container), volume (0.0-1.0).
+  # Used by the alarme_som_* scripts (scripts.yaml).
   alarme_tocar_som: >-
     ffmpeg -hide_banner -loglevel error
-    -i /sounds/freedesktop/stereo/{{ sound | default('alarm-clock-elapsed') }}.oga
+    -i {{ file | default('/sounds/freedesktop/stereo/bell.oga') }}
     -filter:a volume={{ volume | default(0.5) }}
     -f pulse "Home Assistant"

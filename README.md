@@ -138,14 +138,27 @@ Peças:
 
 ### Som no notebook
 
-Com o alarme armado e `input_boolean.alarme_som_notebook` ligado (botão "Som no notebook" no painel), o notebook toca:
+Com o alarme armado (exceto no modo noite) e `input_boolean.alarme_som_notebook` ligado, o notebook toca:
 
-| Classificação | Som | Volume |
-|---|---|---|
-| Possível humano | `alarm-clock-elapsed`, 3 vezes | 100% |
-| Possível animalzinho | `bell`, 1 vez, no máximo a cada "Intervalo entre avisos de animal" | 30% |
+| Classificação | Script | Som | Volume |
+|---|---|---|---|
+| Possível humano | `script.alarme_som_pessoa` | escolhido em `input_select.alarme_som_pessoa` (Ding-dong, Mensagem, Login, Despertador), 2 vezes | 60% |
+| Possível animalzinho | `script.alarme_som_animal` | `bell`, 1 vez, no máximo a cada "Intervalo entre avisos de animal" | 80% |
 
-Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/1000/pulse`) e os sons do sistema (`/usr/share/sounds`); o `shell_command.alarme_tocar_som` (variáveis `sound` e `volume`) toca com o `ffmpeg` do próprio container. O volume final também depende do volume do sistema (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, hoje 50%). O áudio do PipeWire só existe com a sessão do usuário ativa (lingering do systemd).
+O painel tem os botões **Testar som de pessoa** e **Testar som de animal**. O `ding-dong.wav` (em `config/sounds/`) foi sintetizado com o `ffmpeg`.
+
+Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/1000/pulse`) e os sons do sistema (`/usr/share/sounds`); o `shell_command.alarme_tocar_som` (variáveis `file` e `volume`) toca com o `ffmpeg` do container. O `ffmpeg` retorna antes de o som acabar, por isso o script espera entre as repetições. O volume final também depende do volume do sistema (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, hoje 50%). O linger do usuário está ativo, então o PipeWire sobe mesmo sem login.
+
+### Modo noite (automático)
+
+- **00:00**: se estiver desarmado, arma em `armed_night` (arma na hora). Um "ausente" armado manualmente não é alterado.
+- **07:30**: desarma, mas só se estiver no modo noite.
+- À noite há gente em casa dormindo: **sem som no notebook**; **possível humano** liga a lâmpada e notifica o celular; **possível animalzinho** só vai para o registro (sem notificação).
+- Também ficam quietos entre 00:00 e 07:30: o aviso de Zigbee indisponível (fica para o lembrete das 9h) e o teste de temperatura.
+
+### Radar e a confirmação de humano
+
+O Sensor de passagem novo (radar mmWave) pulsa a cada ~61 s (10 s ligado), então ele está quase sempre como "detecção recente". Com ele confirmando, qualquer gato na Lateral virava "humano" (85 falsos num dia). Por isso, com `input_boolean.alarme_radar_confirma` **desligado** (padrão), o radar não confirma humano nem conta presença contínua: humano exige **Lateral + Fundos** ou presença contínua num PIR. O radar continua aparecendo nos contadores e no registro. Ligue o botão "Radar confirma humano" no painel quando o radar estiver confiável.
 
 ### Registro do alarme armado
 

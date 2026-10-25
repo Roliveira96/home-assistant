@@ -15,6 +15,7 @@ views:
             name: Alarme casa
             states:
               - arm_home
+              - arm_night
               - arm_away
             grid_options:
               columns: full
@@ -29,6 +30,36 @@ views:
             icon: mdi:volume-high
             grid_options:
               columns: 6
+          - type: tile
+            entity: input_select.alarme_som_pessoa
+            name: Som de pessoa
+            features:
+              - type: select-options
+            grid_options:
+              columns: full
+          - type: button
+            name: Testar som de pessoa
+            icon: mdi:human-handsdown
+            tap_action:
+              action: perform-action
+              perform_action: script.alarme_som_pessoa
+            grid_options:
+              columns: 6
+              rows: 2
+          - type: button
+            name: Testar som de animal
+            icon: mdi:cat
+            tap_action:
+              action: perform-action
+              perform_action: script.alarme_som_animal
+            grid_options:
+              columns: 6
+              rows: 2
+          - type: markdown
+            content: >
+              🌙 **Modo noite automático**: arma às **00:00** e desarma às
+              **07:30**. À noite não toca som; pessoa liga a lâmpada e
+              notifica o celular, animal só fica no registro.
       - type: grid
         cards:
           - type: heading
@@ -119,6 +150,8 @@ views:
                 name: Intervalo entre avisos de animal (min)
               - entity: number.area_externa_sensor_de_passagem_novo_sensitivity
                 name: Sensibilidade do radar (0-10)
+              - entity: input_boolean.alarme_radar_confirma
+                name: Radar confirma humano
           - type: markdown
             content: >
               **Possível humano**: 2 sensores diferentes dentro da janela,

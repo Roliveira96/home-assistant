@@ -61,7 +61,11 @@
     - sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
     - sensor.escritorio_medidor_de_temperatura_temperatura
     below: 19.4
-  conditions: []
+  conditions:
+  # Quiet hours (00:00-07:30).
+  - condition: time
+    after: 07:30:00
+    before: '23:59:59'
   actions:
   - action: notify.mobile_app_android_ricardo
     data:
@@ -90,6 +94,10 @@
         else 0 }}'
       names: '{{ state_attr(''sensor.zigbee_indisponiveis'', ''devices'') | default([],
         true) | join('', '') }}'
+  - condition: template
+    # Quiet hours: changes during the night wait for the 09:00 reminder.
+    value_template: '{{ trigger.id == ''daily'' or not (now().hour < 7 or (now().hour
+      == 7 and now().minute < 30)) }}'
   - choose:
     # More devices went offline (or daily reminder while any is offline).
     - conditions:
@@ -120,7 +128,8 @@
     animalzinho. Com o alarme armado, humano dispara o alarme, liga a lampada corredor
     e notifica; animal só notifica, respeitando o intervalo entre avisos. Com o
     som no notebook ligado, humano toca o despertador alto 3x e animal um sino
-    baixo (com o mesmo intervalo).'
+    baixo (com o mesmo intervalo). No modo noite (00:00-07:30): sem som; humano
+    liga a lâmpada e notifica; animal só é registrado.'
   triggers:
   - trigger: state
     entity_id:
@@ -135,10 +144,21 @@
       first: '{{ trigger.entity_id }}'
       others: "{{ ['binary_sensor.area_externa_sensor_de_passagem_novo', 'binary_sensor.lateral_casa',\
         \ 'binary_sensor.fundos_casa'] | reject('eq', trigger.entity_id) | list }}"
+      radar: binary_sensor.area_externa_sensor_de_passagem_novo
+      radar_ok: '{{ is_state(''input_boolean.alarme_radar_confirma'', ''on'') }}'
+      # Sensors allowed to confirm a human (the radar only when trusted).
+      confirmers: "{{ others if is_state('input_boolean.alarme_radar_confirma', 'on')\
+        \ else others | reject('eq', 'binary_sensor.area_externa_sensor_de_passagem_novo')\
+        \ | list }}"
       window_min: '{{ states(''input_number.alarme_janela_confirmacao'') | int(2) }}'
       persist_s: '{{ states(''input_number.alarme_tempo_presenca'') | int(60) }}'
       armed: '{{ states(''alarm_control_panel.alarme_casa'') in [''armed_away'', ''armed_home'',
         ''armed_night'', ''armed_vacation'', ''triggered''] }}'
+      # Night mode (armed automatically 00:00-07:30): people are home and
+      # asleep, so no notebook sound and no notification for animals.
+      night: '{{ is_state(''alarm_control_panel.alarme_casa'', ''armed_night'') or
+        (is_state(''alarm_control_panel.alarme_casa'', ''triggered'') and state_attr(''alarm_control_panel.alarme_casa'',
+        ''previous_state'') == ''armed_night'') }}'
       # Template binary sensors that stay on for the confirmation window.
       recent:
         binary_sensor.area_externa_sensor_de_passagem_novo: binary_sensor.deteccao_recente_sensor_de_passagem
@@ -147,21 +167,22 @@
       # Another sensor detected now or within the confirmation window.
       human_now: >
         {% set ns = namespace(hit=false) %}
-        {% for e in others if is_state(recent[e], 'on') %}{% set ns.hit = true %}{% endfor %}
+        {% for e in confirmers if is_state(recent[e], 'on') %}{% set ns.hit = true %}{% endfor %}
         {{ ns.hit }}
   # Phase 1: does the same sensor keep detecting for the presence time?
   # (completes at once when already confirmed; times out if it stays on).
-  - wait_template: '{{ human_now or is_state(first, ''off'') or others | select(''is_state'',
+  - wait_template: '{{ human_now or is_state(first, ''off'') or confirmers | select(''is_state'',
       ''on'') | list | count > 0 }}'
     timeout:
       seconds: '{{ persist_s }}'
     continue_on_timeout: true
   - variables:
-      phase1_human: '{{ human_now or not wait.completed or others | select(''is_state'',
-        ''on'') | list | count > 0 }}'
+      # Continuous presence only counts for the radar when it is trusted.
+      phase1_human: '{{ human_now or (not wait.completed and (first != radar or radar_ok))
+        or confirmers | select(''is_state'', ''on'') | list | count > 0 }}'
   # Phase 2: does another sensor detect within the confirmation window?
-  - wait_template: '{{ phase1_human or others | select(''is_state'', ''on'') | list
-      | count > 0 }}'
+  - wait_template: '{{ phase1_human or confirmers | select(''is_state'', ''on'') |
+      list | count > 0 }}'
     timeout:
       minutes: '{{ window_min }}'
     continue_on_timeout: true
@@ -169,7 +190,7 @@
       is_human: '{{ phase1_human or wait.completed }}'
       partners: >
         {% set ns = namespace(names=[]) %}
-        {% for e in others if is_state(recent[e], 'on') %}
+        {% for e in confirmers if is_state(recent[e], 'on') %}
           {% set ns.names = ns.names + [state_attr(e, 'friendly_name')] %}
         {% endfor %}
         {{ ns.names }}
@@ -220,17 +241,11 @@
               priority: high
               ttl: 0
         - if:
-          - condition: state
-            entity_id: input_boolean.alarme_som_notebook
-            state: 'on'
+          - condition: template
+            value_template: '{{ not night and is_state(''input_boolean.alarme_som_notebook'',
+              ''on'') }}'
           then:
-          - repeat:
-              count: 3
-              sequence:
-              - action: shell_command.alarme_tocar_som
-                data:
-                  sound: alarm-clock-elapsed
-                  volume: 1.0
+          - action: script.alarme_som_pessoa
     default:
     - action: counter.increment
       target:
@@ -242,7 +257,7 @@
         entity_id: counter.eventos_possivel_animal
     - if:
       - condition: template
-        value_template: "{{ armed and (now() - (states('input_datetime.alarme_ultimo_aviso_animal')\
+        value_template: "{{ armed and not night and (now() - (states('input_datetime.alarme_ultimo_aviso_animal')\
           \ | as_datetime(today_at()) | as_local)) >= timedelta(minutes=states('input_number.alarme_intervalo_aviso_animal')\
           \ | int(10)) }}"
       then:
@@ -260,10 +275,7 @@
           entity_id: input_boolean.alarme_som_notebook
           state: 'on'
         then:
-        - action: shell_command.alarme_tocar_som
-          data:
-            sound: bell
-            volume: 0.3
+        - action: script.alarme_som_animal
   mode: single
   max_exceeded: silent
 - id: '1792500000005'
@@ -279,4 +291,37 @@
       entity_id:
       - counter.eventos_possivel_animal
       - counter.eventos_possivel_humano
+  mode: single
+- id: '1792500000006'
+  alias: Alarme - armar modo noite à meia-noite
+  description: Arma o Alarme casa em "noite" às 00:00 se estiver desarmado (pessoas
+    em casa; sem som, lâmpada e notificação só para humano).
+  triggers:
+  - trigger: time
+    at: 00:00:00
+  conditions:
+  - condition: state
+    entity_id: alarm_control_panel.alarme_casa
+    state: disarmed
+  actions:
+  - action: alarm_control_panel.alarm_arm_night
+    target:
+      entity_id: alarm_control_panel.alarme_casa
+  mode: single
+- id: '1792500000007'
+  alias: Alarme - desarmar modo noite às 07:30
+  description: Desarma o Alarme casa às 07:30 se ele estiver no modo noite (um "ausente"
+    armado manualmente continua armado).
+  triggers:
+  - trigger: time
+    at: 07:30:00
+  conditions:
+  - condition: template
+    value_template: '{{ is_state(''alarm_control_panel.alarme_casa'', ''armed_night'')
+      or (is_state(''alarm_control_panel.alarme_casa'', ''triggered'') and state_attr(''alarm_control_panel.alarme_casa'',
+      ''previous_state'') == ''armed_night'') }}'
+  actions:
+  - action: alarm_control_panel.alarm_disarm
+    target:
+      entity_id: alarm_control_panel.alarme_casa
   mode: single
