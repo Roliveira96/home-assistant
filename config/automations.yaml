@@ -51,3 +51,21 @@
     entity_id: 63af2b8ecfcd8fbcdbfeb9df83d2bf02
     domain: switch
   mode: single
+- id: '1792500000001'
+  alias: Teste - temperatura abaixo de 19.4
+  description: Notifica o celular quando um medidor de temperatura do escritório
+    fica abaixo de 19.4 °C (automação de teste).
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+    - sensor.escritorio_medidor_de_temperatura_temperatura
+    below: 19.4
+  conditions: []
+  actions:
+  - action: notify.mobile_app_android_ricardo
+    data:
+      title: Temperatura baixa
+      message: '{{ trigger.to_state.name }}: {{ trigger.to_state.state }} °C (abaixo
+        de 19.4 °C)'
+  mode: queued
