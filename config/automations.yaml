@@ -280,7 +280,8 @@
   max_exceeded: silent
 - id: '1792500000005'
   alias: Alarme - zerar contadores à meia-noite
-  description: Zera os contadores de possível humano e possível animalzinho todo dia.
+  description: Zera os contadores de possível humano, possível animalzinho e campainha
+    todo dia.
   triggers:
   - trigger: time
     at: 00:00:00
@@ -291,6 +292,7 @@
       entity_id:
       - counter.eventos_possivel_animal
       - counter.eventos_possivel_humano
+      - counter.campainha_hoje
   mode: single
 - id: '1792500000006'
   alias: Alarme - armar modo noite à meia-noite
@@ -370,6 +372,14 @@
       message: '{{ ''2 cliques'' if trigger.id == ''double'' else ''1 clique'' }}{{ ''
         - luz ligada'' if light else '''' }}'
       entity_id: script.campainha_tocar
+  - action: counter.increment
+    target:
+      entity_id: counter.campainha_hoje
+  # Consumed by the "Última campainha" template sensor.
+  - event: campainha_tocou
+    event_data:
+      tipo: '{{ "2 cliques" if trigger.id == "double" else "1 clique" }}'
+      luz: '{{ light }}'
   - action: script.campainha_tocar
   mode: queued
   max: 10

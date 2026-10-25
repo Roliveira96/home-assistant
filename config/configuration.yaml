@@ -91,6 +91,19 @@ template:
                            'sensores': trigger.event.data.sensores,
                            'foto': trigger.event.data.foto | default('')}] %}
             {{ (new + (this.attributes.eventos | default([], true)))[:50] }}
+  # Last doorbell press (fired by the "Campainha - botão" automation).
+  - triggers:
+      - trigger: event
+        event_type: campainha_tocou
+    sensor:
+      - name: Última campainha
+        unique_id: doorbell_last_press
+        icon: mdi:doorbell-video
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          tipo: "{{ trigger.event.data.tipo }}"
+          luz: "{{ trigger.event.data.luz }}"
 
 zha:
   # Local quirks for devices ZHA does not support out of the box.
@@ -225,15 +238,22 @@ counter:
     name: Possível humano
     icon: mdi:human-handsdown
     restore: true
+  # Doorbell presses of the day (reset at midnight by automation).
+  campainha_hoje:
+    name: Campainha hoje
+    icon: mdi:doorbell
+    restore: true
 
 shell_command:
   # Plays a sound file on the notebook speakers through PipeWire.
-  # Variables: file (path inside the container), volume (gain; >1 boosts).
-  # One second of trailing silence keeps ffmpeg from closing the stream
-  # before very short sounds are actually played.
-  # Used by the alarme_som_* scripts (scripts.yaml).
+  # Variables: file (path inside the container), volume (gain; >1 boosts),
+  # loops (extra repetitions, played back to back).
+  # ffmpeg exits ~1.8 s before playback ends and PipeWire drops what is still
+  # buffered, so 3 s of trailing silence makes sure the whole sound is heard.
+  # Used by the scripts in scripts.yaml.
   alarme_tocar_som: >-
     ffmpeg -hide_banner -loglevel error
+    -stream_loop {{ loops | default(0) | int }}
     -i {{ file | default('/sounds/freedesktop/stereo/bell.oga') }}
-    -filter:a volume={{ volume | default(1.0) }},apad=pad_dur=1
+    -filter:a volume={{ volume | default(1.0) }},apad=pad_dur=3
     -f pulse "Home Assistant"

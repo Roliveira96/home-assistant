@@ -147,7 +147,7 @@ Com o alarme armado (exceto no modo noite) e `input_boolean.alarme_som_notebook`
 
 O painel tem os botões **Testar som de pessoa** e **Testar som de animal**. O `ding-dong.wav` (em `config/sounds/`) foi sintetizado com o `ffmpeg`.
 
-Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/1000/pulse`) e os sons do sistema (`/usr/share/sounds`); o `shell_command.alarme_tocar_som` (variáveis `file` e `volume`) toca com o `ffmpeg` do container. O `ffmpeg` retorna antes de o som acabar, por isso o script espera entre as repetições. O volume final também depende do volume do sistema (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, hoje 50%). O linger do usuário está ativo, então o PipeWire sobe mesmo sem login.
+Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/1000/pulse`) e os sons do sistema (`/usr/share/sounds`); o `shell_command.alarme_tocar_som` (variáveis `file` e `volume`) toca com o `ffmpeg` do container. O `ffmpeg` encerra ~1,8 s antes de o áudio terminar e o PipeWire descarta o que ainda está no buffer; por isso o comando acrescenta 3 s de silêncio no fim e as repetições são feitas num único comando (`loops`, via `-stream_loop`). O volume final também depende do volume do sistema (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, hoje 50%). O linger do usuário está ativo, então o PipeWire sobe mesmo sem login.
 
 ### Modo noite (automático)
 
@@ -189,7 +189,7 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Automação sensor lateral casa | Sensor de presença lateral ocupado após as 18h → liga o interruptor |
 | Area Externa | Gatilho de dispositivo entre 18h e 08h → liga o mesmo interruptor |
 | Nova automação | Botão pressionado → ainda sem ação (rascunho) |
-| Campainha - botão | **Botão Campainha**: 1 clique → ding-dong 2x no notebook + notificação; 2 cliques → a partir das 18h (até 06h) também liga a lampada corredor. Cada toque toca de novo (fila). O ZG-101ZL aparece no ZHA como interruptor: 1 clique = `toggle`, 2 cliques = `on`, segurar = `off` (evento `zha_event`) |
+| Campainha - botão | **Botão Campainha** (seção "Campainha" do painel: última vez, toques hoje, testar, luz e histórico): 1 clique → ding-dong 2x no notebook + notificação; 2 cliques → a partir das 18h (até 06h) também liga a lampada corredor. Cada toque toca de novo (fila). O ZG-101ZL aparece no ZHA como interruptor: 1 clique = `toggle`, 2 cliques = `on`, segurar = `off` (evento `zha_event`) |
 | Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
 | Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
 

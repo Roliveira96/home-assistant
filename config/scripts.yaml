@@ -10,17 +10,12 @@ alarme_som_pessoa:
         Mensagem: /sounds/freedesktop/stereo/message-new-instant.oga
         Login: /sounds/freedesktop/stereo/service-login.oga
         Despertador: /sounds/freedesktop/stereo/alarm-clock-elapsed.oga
-  - repeat:
-      count: 2
-      sequence:
-      - action: shell_command.alarme_tocar_som
-        data:
-          file: '{{ files.get(states(''input_select.alarme_som_pessoa''), files[''Ding-dong''])
-            }}'
-          volume: 0.6
-      # ffmpeg returns once the audio is queued; wait for it to finish.
-      - delay:
-          seconds: 2.5
+  - action: shell_command.alarme_tocar_som
+    data:
+      file: '{{ files.get(states(''input_select.alarme_som_pessoa''), files[''Ding-dong''])
+        }}'
+      volume: 0.6
+      loops: 1
 alarme_som_animal:
   alias: Tocar som de animal
   description: Toca no notebook o sino baixo usado para "possível animalzinho".
@@ -38,13 +33,10 @@ campainha_tocar:
   mode: queued
   max: 10
   sequence:
-  - repeat:
-      count: 2
-      sequence:
-      - action: shell_command.alarme_tocar_som
-        data:
-          file: /config/sounds/ding-dong.wav
-          volume: 1.0
-      # ffmpeg returns once the audio is queued; wait for it to finish.
-      - delay:
-          seconds: 2.5
+  # Both rings in one ffmpeg call (loops: 1), so they are never cut or
+  # overlapped; the script ends only after the sound has finished.
+  - action: shell_command.alarme_tocar_som
+    data:
+      file: /config/sounds/ding-dong.wav
+      volume: 1.0
+      loops: 1

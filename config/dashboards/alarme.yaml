@@ -55,6 +55,40 @@ views:
             grid_options:
               columns: 6
               rows: 2
+          - type: markdown
+            content: >
+              🌙 **Modo noite automático**: arma às **00:00** e desarma às
+              **07:30**. À noite não toca som; pessoa liga a lâmpada e
+              notifica o celular, animal só fica no registro.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Campainha
+            icon: mdi:doorbell
+          - type: tile
+            entity: sensor.ultima_campainha
+            name: Última vez
+            icon: mdi:doorbell-video
+            color: blue
+            grid_options:
+              columns: 6
+          - type: tile
+            entity: counter.campainha_hoje
+            name: Toques hoje
+            icon: mdi:counter
+            color: blue
+            grid_options:
+              columns: 6
+          - type: markdown
+            content: >
+              {% set s = states.sensor.ultima_campainha %}
+              {% if s and s.state not in ['unknown', 'unavailable'] %}
+              🔔 Tocou **{{ relative_time(as_datetime(s.state)) }} atrás**
+              ({{ as_local(as_datetime(s.state)).strftime('%d/%m às %H:%M') }}),
+              {{ s.attributes.tipo }}{{ ', luz do corredor ligada' if s.attributes.luz else '' }}.
+              {% else %}
+              🔔 A campainha ainda não tocou.
+              {% endif %}
           - type: button
             name: Testar campainha
             icon: mdi:doorbell
@@ -62,13 +96,24 @@ views:
               action: perform-action
               perform_action: script.campainha_tocar
             grid_options:
-              columns: full
+              columns: 6
               rows: 2
-          - type: markdown
-            content: >
-              🌙 **Modo noite automático**: arma às **00:00** e desarma às
-              **07:30**. À noite não toca som; pessoa liga a lâmpada e
-              notifica o celular, animal só fica no registro.
+          - type: button
+            entity: switch.lampada_corredor_socket_1
+            name: Luz do corredor
+            icon: mdi:lightbulb
+            show_state: true
+            tap_action:
+              action: toggle
+            grid_options:
+              columns: 6
+              rows: 2
+          - type: logbook
+            title: Toques recentes
+            hours_to_show: 48
+            target:
+              entity_id:
+                - script.campainha_tocar
       - type: grid
         cards:
           - type: heading
