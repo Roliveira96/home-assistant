@@ -114,7 +114,7 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 
 | Aba | Conteúdo |
 |---|---|
-| **Casa** | badges (alarme, pessoas/animais/campainha hoje, luz do corredor, Zigbee fora do ar só quando houver); Alarme (armar/desarmar, modo noite); Campainha (última vez, toques, testar, luz); Hoje (pessoa/animal/disparos e gráfico 24 h); Clima e temperatura (previsão `weather.forecast_casa`, temperatura/umidade da área externa e do escritório, gráfico 24 h); Agenda (`calendar.casa`, calendário local criado pela interface — os eventos ficam em `.storage`, fora do git); Registro do alarme armado; Baixar registro e últimos eventos |
+| **Casa** | badges (alarme, pessoas/animais/campainha hoje, luz do corredor, Zigbee fora do ar só quando houver); Alarme (armar/desarmar, modo noite); Campainha (última vez, toques, testar, luz); Hoje (pessoa/animal/disparos); Clima e temperatura (previsão `weather.forecast_casa`, temperatura/umidade da área externa e do escritório); Gráficos (temperatura e detecções em 24 h); Agenda (`calendar.casa`, calendário local criado pela interface — os eventos ficam em `.storage`, fora do git); Registro do alarme armado; Baixar registro e últimos eventos |
 | **Ajustes** | sons no notebook e testes; classificação pessoa × animal; detecções por sensor; toques da campainha (48 h) |
 
 ## Alarme

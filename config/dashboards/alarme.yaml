@@ -138,18 +138,6 @@ views:
       color: red
       grid_options:
         columns: full
-    - type: history-graph
-      title: Detecções nas últimas 24 h
-      hours_to_show: 24
-      entities:
-      - entity: binary_sensor.area_externa_sensor_de_passagem_novo
-        name: Passagem
-      - entity: binary_sensor.lateral_casa
-        name: Lateral
-      - entity: binary_sensor.fundos_casa
-        name: Fundos
-      - entity: alarm_control_panel.alarme_casa
-        name: Alarme
   - type: grid
     cards:
     - type: heading
@@ -205,18 +193,7 @@ views:
       color: light-blue
       grid_options:
         columns: 4
-    - type: history-graph
-      title: Temperatura nas últimas 24 h
-      hours_to_show: 24
-      entities:
-      - entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
-        name: Área externa
-      - entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
-        name: Escritório 1
-      - entity: sensor.escritorio_medidor_de_temperatura_temperatura
-        name: Escritório 2
   - type: grid
-    column_span: 2
     cards:
     - type: heading
       heading: Agenda
@@ -227,6 +204,33 @@ views:
       initial_view: listWeek
       grid_options:
         columns: full
+  - type: grid
+    cards:
+    - type: heading
+      heading: Gráficos
+      icon: mdi:chart-line
+    - type: history-graph
+      title: Temperatura (24 h)
+      hours_to_show: 24
+      entities:
+      - entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+        name: Área externa
+      - entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+        name: Escritório 1
+      - entity: sensor.escritorio_medidor_de_temperatura_temperatura
+        name: Escritório 2
+    - type: history-graph
+      title: Detecções (24 h)
+      hours_to_show: 24
+      entities:
+      - entity: binary_sensor.area_externa_sensor_de_passagem_novo
+        name: Passagem
+      - entity: binary_sensor.lateral_casa
+        name: Lateral
+      - entity: binary_sensor.fundos_casa
+        name: Fundos
+      - entity: alarm_control_panel.alarme_casa
+        name: Alarme
   - type: grid
     column_span: 2
     cards:
