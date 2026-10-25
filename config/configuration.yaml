@@ -18,3 +18,31 @@ http:
   trusted_proxies:
     - 127.0.0.1
     - ::1
+
+template:
+  # Zigbee devices whose every entity is unavailable (works for new devices
+  # automatically). Used by the "Zigbee indisponível" automation.
+  - sensor:
+      - name: Zigbee indisponíveis
+        unique_id: zigbee_unavailable_devices
+        icon: mdi:zigbee
+        unit_of_measurement: dispositivos
+        state: >
+          {% set ns = namespace(n=0) %}
+          {% for d in integration_entities('zha') | map('device_id') | reject('none') | unique %}
+            {% set st = expand(device_entities(d)) | map(attribute='state') | list %}
+            {% if st and st | reject('eq', 'unavailable') | list | count == 0 %}
+              {% set ns.n = ns.n + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.n }}
+        attributes:
+          devices: >
+            {% set ns = namespace(names=[]) %}
+            {% for d in integration_entities('zha') | map('device_id') | reject('none') | unique %}
+              {% set st = expand(device_entities(d)) | map(attribute='state') | list %}
+              {% if st and st | reject('eq', 'unavailable') | list | count == 0 %}
+                {% set ns.names = ns.names + [(device_attr(d, 'name_by_user') or device_attr(d, 'name')) | trim] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.names }}

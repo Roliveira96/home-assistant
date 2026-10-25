@@ -69,3 +69,46 @@
       message: '{{ trigger.to_state.name }}: {{ trigger.to_state.state }} °C (abaixo
         de 19.4 °C)'
   mode: queued
+- id: '1792500000002'
+  alias: Aviso - Zigbee indisponível
+  description: Notifica o celular quando dispositivos Zigbee ficam indisponíveis
+    por 30 min, lembra todo dia às 9h e avisa quando todos voltarem.
+  triggers:
+  - trigger: state
+    entity_id: sensor.zigbee_indisponiveis
+    for:
+      minutes: 30
+    id: changed
+  - trigger: time
+    at: 09:00:00
+    id: daily
+  conditions: []
+  actions:
+  - variables:
+      count: '{{ states(''sensor.zigbee_indisponiveis'') | int(0) }}'
+      previous: '{{ trigger.from_state.state | int(0) if trigger.id == ''changed''
+        else 0 }}'
+      names: '{{ state_attr(''sensor.zigbee_indisponiveis'', ''devices'') | default([],
+        true) | join('', '') }}'
+  - choose:
+    # More devices went offline (or daily reminder while any is offline).
+    - conditions:
+      - condition: template
+        value_template: '{{ count > 0 and (trigger.id == ''daily'' or count > previous)
+          }}'
+      sequence:
+      - action: notify.mobile_app_android_ricardo
+        data:
+          title: Zigbee indisponível
+          message: '{{ count }} dispositivo(s) fora do ar: {{ names }}'
+    # Everything is back online.
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''changed'' and count == 0 and previous
+          > 0 }}'
+      sequence:
+      - action: notify.mobile_app_android_ricardo
+        data:
+          title: Zigbee normalizado
+          message: Todos os dispositivos Zigbee voltaram a funcionar.
+  mode: queued

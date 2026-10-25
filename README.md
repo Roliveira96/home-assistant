@@ -123,6 +123,10 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Automação sensor lateral casa | Sensor de presença lateral ocupado após as 18h → liga o interruptor |
 | Area Externa | Gatilho de dispositivo entre 18h e 08h → liga o mesmo interruptor |
 | Nova automação | Botão pressionado → ainda sem ação (rascunho) |
+| Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
+| Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
+
+As notificações vão para `notify.mobile_app_android_ricardo` (app Companion no celular Android do Ricardo).
 
 ## Roadmap
 
@@ -143,7 +147,7 @@ Os dois casos pedem soluções diferentes:
    - uma automação do HA faz um ping a cada 5 min para um serviço como o [healthchecks.io](https://healthchecks.io) (gratuito), via `rest_command`;
    - se os pings param, o serviço manda a mensagem (Telegram, e-mail ou push).
    - Alternativa: monitorar o endereço público do túnel com UptimeRobot, que também pega o caso do túnel cair.
-2. **Sensor ou Zigbee indisponível (máquina online):** uma automação no próprio HA. Gatilho: entidade com estado `unavailable` por mais de 30 min. Ação: notificação no celular. Com isso, o problema de 20/10 seria percebido na mesma noite.
+2. ✅ **Sensor ou Zigbee indisponível (máquina online)** — feito (automação "Aviso - Zigbee indisponível"): uma automação no próprio HA. Gatilho: entidade com estado `unavailable` por mais de 30 min. Ação: notificação no celular. Com isso, o problema de 20/10 seria percebido na mesma noite.
 
 Lembrete: depois de muito tempo sem o coordenador, os sensores a bateria (Tuya TS0201, HOBEIAN ZG-204Z) podem não reconectar sozinhos. Aperte o botão do sensor; se não voltar, pareie de novo pelo ZHA.
 
