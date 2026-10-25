@@ -130,6 +130,21 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 - [ ] Migrar o container antigo para o compose (seção [Migração](#migração-da-instalação-antiga-fazer-uma-vez))
 - [ ] Acesso remoto pela Cloudflare Tunnel
 - [ ] Notificações no celular para eventos dentro de um período (ideia abaixo)
+- [ ] Monitoramento: avisar quando a máquina ficar offline ou um sensor ficar indisponível (ideia abaixo)
+
+### Ideia: avisar quando a máquina ou os sensores caírem
+
+**Motivo:** em 20/10/2026, por volta das 21h, a máquina ficou sem internet. O dongle Zigbee perdeu a conexão às 21:15 e só voltou em 24/10. Foram 4 dias sem automações e sem aviso nenhum.
+
+Os dois casos pedem soluções diferentes:
+
+1. **Máquina offline (sem internet ou desligada):** o HA não consegue avisar, porque está sem rede. É preciso um vigia **externo** do tipo *dead man's switch*:
+   - uma automação do HA faz um ping a cada 5 min para um serviço como o [healthchecks.io](https://healthchecks.io) (gratuito), via `rest_command`;
+   - se os pings param, o serviço manda a mensagem (Telegram, e-mail ou push).
+   - Alternativa: monitorar o endereço público do túnel com UptimeRobot, que também pega o caso do túnel cair.
+2. **Sensor ou Zigbee indisponível (máquina online):** uma automação no próprio HA. Gatilho: entidade com estado `unavailable` por mais de 30 min. Ação: notificação no celular. Com isso, o problema de 20/10 seria percebido na mesma noite.
+
+Lembrete: depois de muito tempo sem o coordenador, os sensores a bateria (Tuya TS0201, HOBEIAN ZG-204Z) podem não reconectar sozinhos. Aperte o botão do sensor; se não voltar, pareie de novo pelo ZHA.
 
 ### Ideia: notificar o celular quando um evento ocorrer num período
 
