@@ -135,9 +135,18 @@
     - armed_vacation
     - triggered
   actions:
-  - action: alarm_control_panel.alarm_trigger
-    target:
-      entity_id: alarm_control_panel.alarme_casa
+  # alarm_trigger fails when the panel is already triggered, which would skip
+  # the light and the notification.
+  - if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: alarm_control_panel.alarme_casa
+        state: triggered
+    then:
+    - action: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarme_casa
   - action: switch.turn_on
     target:
       entity_id: switch.lampada_corredor_socket_1

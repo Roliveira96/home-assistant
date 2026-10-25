@@ -46,6 +46,14 @@ template:
               {% endif %}
             {% endfor %}
             {{ ns.names }}
+      # Sum of today's detections from the three alarm sensors.
+      - name: Eventos hoje - Total
+        unique_id: events_today_total
+        icon: mdi:motion-sensor
+        unit_of_measurement: eventos
+        state: >
+          {{ ['sensor.eventos_hoje_sensor_de_passagem', 'sensor.eventos_hoje_lateral_casa',
+              'sensor.eventos_hoje_fundos_casa'] | map('states') | map('int', 0) | sum }}
 
 zha:
   # Local quirks for devices ZHA does not support out of the box.
@@ -65,3 +73,48 @@ alarm_control_panel:
     disarm_after_trigger: false
     armed_home:
       arming_time: 0
+
+sensor:
+  # Today's detection counts (since midnight) for the alarm dashboard.
+  - platform: history_stats
+    name: Eventos hoje - Sensor de passagem
+    unique_id: events_today_passage_sensor
+    entity_id: binary_sensor.area_externa_sensor_de_passagem_novo
+    state: "on"
+    type: count
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: Eventos hoje - Lateral casa
+    unique_id: events_today_side_house
+    entity_id: binary_sensor.lateral_casa
+    state: "on"
+    type: count
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: Eventos hoje - Fundos Casa
+    unique_id: events_today_back_house
+    entity_id: binary_sensor.fundos_casa
+    state: "on"
+    type: count
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: Disparos do alarme hoje
+    unique_id: alarm_triggers_today
+    entity_id: alarm_control_panel.alarme_casa
+    state: triggered
+    type: count
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+
+lovelace:
+  dashboards:
+    # YAML dashboard, versioned in git (config/dashboards/alarme.yaml).
+    dashboard-alarme:
+      mode: yaml
+      title: Alarme
+      icon: mdi:shield-home
+      show_in_sidebar: true
+      filename: dashboards/alarme.yaml

@@ -1,0 +1,85 @@
+title: Alarme
+views:
+  - title: Alarme
+    path: alarme
+    icon: mdi:shield-home
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Controle
+          - type: alarm-panel
+            entity: alarm_control_panel.alarme_casa
+            name: Alarme casa
+            states:
+              - arm_home
+              - arm_away
+            grid_options:
+              columns: full
+          - type: tile
+            entity: switch.lampada_corredor_socket_1
+            name: Lâmpada corredor
+            grid_options:
+              columns: full
+      - type: grid
+        cards:
+          - type: heading
+            heading: Eventos hoje
+          - type: tile
+            entity: sensor.eventos_hoje_total
+            name: Total de detecções
+            icon: mdi:motion-sensor
+            grid_options:
+              columns: 6
+          - type: tile
+            entity: sensor.disparos_do_alarme_hoje
+            name: Disparos do alarme
+            icon: mdi:alarm-light
+            color: red
+            grid_options:
+              columns: 6
+          - type: tile
+            entity: sensor.eventos_hoje_sensor_de_passagem
+            name: Sensor de passagem
+            icon: mdi:walk
+            grid_options:
+              columns: 4
+          - type: tile
+            entity: sensor.eventos_hoje_lateral_casa
+            name: Lateral casa
+            icon: mdi:motion-sensor
+            grid_options:
+              columns: 4
+          - type: tile
+            entity: sensor.eventos_hoje_fundos_casa
+            name: Fundos Casa
+            icon: mdi:motion-sensor
+            grid_options:
+              columns: 4
+          - type: history-graph
+            title: Detecções nas últimas 24 h
+            hours_to_show: 24
+            entities:
+              - entity: binary_sensor.area_externa_sensor_de_passagem_novo
+                name: Sensor de passagem
+              - entity: binary_sensor.lateral_casa
+                name: Lateral casa
+              - entity: binary_sensor.fundos_casa
+                name: Fundos Casa
+              - entity: alarm_control_panel.alarme_casa
+                name: Alarme
+      - type: grid
+        cards:
+          - type: heading
+            heading: Últimos eventos
+          - type: logbook
+            hours_to_show: 24
+            target:
+              entity_id:
+                - alarm_control_panel.alarme_casa
+                - binary_sensor.area_externa_sensor_de_passagem_novo
+                - binary_sensor.lateral_casa
+                - binary_sensor.fundos_casa
+                - switch.lampada_corredor_socket_1
