@@ -210,9 +210,6 @@ views:
         action: none
       grid_options:
         columns: full
-    - type: markdown
-      content: |
-        📷 Para adicionar fotos: **Mídia → Minha mídia → fotos → Enviar**. Troca a cada 20 s.
   - type: grid
     cards:
     - type: heading
