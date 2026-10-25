@@ -117,7 +117,26 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 | Armar ausente (`armed_away`) | 30 s (tempo para sair) | ninguém em casa |
 | Armar em casa (`armed_home`) | imediato | à noite, com gente em casa |
 
-Disparado, fica em `triggered` por 5 min e volta para armado. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
+Disparado, fica em `triggered` por 5 min e volta para armado.
+
+### Humano ou animal (temos gatos)
+
+Os sensores pegam os gatos, então cada detecção é classificada:
+
+- **Possível humano**: dois sensores **diferentes** detectam dentro da *janela de confirmação* (padrão 2 min), **ou** o mesmo sensor fica detectando sem parar pelo *tempo de presença* (padrão 60 s; os PIR ZG-204Z ficam sempre 30–40 s ligados por detecção, por isso o padrão não pode ser 30 s).
+- **Possível animalzinho**: detecção isolada que não se confirma.
+
+Peças:
+
+| Entidade | Função |
+|---|---|
+| `input_number.alarme_janela_confirmacao` | janela para o segundo sensor (min) |
+| `input_number.alarme_tempo_presenca` | presença contínua que conta como humano (s) |
+| `input_number.alarme_intervalo_aviso_animal` | intervalo mínimo entre notificações de animal (min) |
+| `binary_sensor.deteccao_recente_*` | template: fica ligado enquanto o sensor detecta e pela janela depois (não dá para usar `last_changed`, que muda também quando o HA reinicia) |
+| `counter.eventos_possivel_humano` / `counter.eventos_possivel_animal` | contagem do dia, zerada à meia-noite |
+
+Todos os ajustes (e a sensibilidade do radar, padrão 4) ficam no painel **Alarme**, seção "Ajustes da classificação". Os eventos classificados aparecem no logbook do painel. Arme e desarme pelo painel ou pelo app do celular (cartão "Painel de alarme").
 
 ## Quirks Zigbee próprios
 
@@ -145,7 +164,8 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
 | Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
 
-| Alarme - movimento com alarme armado | Com o **Alarme casa** armado, movimento no Sensor de passagem novo, Lateral casa ou Fundos Casa → dispara o alarme, liga a **lampada corredor** (Tuya) e notifica o celular (prioridade alta). Ignora novas detecções por 1 min |
+| Alarme - classificar movimento (humano ou animal) | Cada detecção do Sensor de passagem novo, Lateral casa ou Fundos Casa é classificada (ver [Alarme](#alarme)). Com o alarme armado: **possível humano** dispara o alarme, liga a lampada corredor e notifica com prioridade alta; **possível animalzinho** só notifica, no máximo uma vez por intervalo |
+| Alarme - zerar contadores à meia-noite | Zera os contadores de possível humano e possível animalzinho |
 
 As notificações vão para `notify.mobile_app_android_ricardo` (app Companion no celular Android do Ricardo).
 

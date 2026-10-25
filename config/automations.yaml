@@ -112,11 +112,13 @@
           title: Zigbee normalizado
           message: Todos os dispositivos Zigbee voltaram a funcionar.
   mode: queued
-- id: '1792500000003'
-  alias: Alarme - movimento com alarme armado
-  description: Com o Alarme casa armado, se o Sensor de passagem novo, Lateral casa
-    ou Fundos Casa detectar algo, dispara o alarme, liga a lampada corredor e notifica
-    o celular.
+- id: '1792500000004'
+  alias: Alarme - classificar movimento (humano ou animal)
+  description: 'Classifica cada detecção do Sensor de passagem novo, Lateral casa
+    e Fundos Casa. Possível humano: 2 sensores diferentes dentro da janela de confirmação,
+    ou o mesmo sensor detectando direto pelo tempo de presença. Senão, possível
+    animalzinho. Com o alarme armado, humano dispara o alarme, liga a lampada corredor
+    e notifica; animal só notifica, respeitando o intervalo entre avisos.'
   triggers:
   - trigger: state
     entity_id:
@@ -125,41 +127,126 @@
     - binary_sensor.fundos_casa
     from: 'off'
     to: 'on'
-  conditions:
-  - condition: state
-    entity_id: alarm_control_panel.alarme_casa
-    state:
-    - armed_away
-    - armed_home
-    - armed_night
-    - armed_vacation
-    - triggered
+  conditions: []
   actions:
-  # alarm_trigger fails when the panel is already triggered, which would skip
-  # the light and the notification.
-  - if:
-    - condition: not
-      conditions:
-      - condition: state
-        entity_id: alarm_control_panel.alarme_casa
-        state: triggered
-    then:
-    - action: alarm_control_panel.alarm_trigger
+  - variables:
+      first: '{{ trigger.entity_id }}'
+      others: "{{ ['binary_sensor.area_externa_sensor_de_passagem_novo', 'binary_sensor.lateral_casa',\
+        \ 'binary_sensor.fundos_casa'] | reject('eq', trigger.entity_id) | list }}"
+      window_min: '{{ states(''input_number.alarme_janela_confirmacao'') | int(2) }}'
+      persist_s: '{{ states(''input_number.alarme_tempo_presenca'') | int(60) }}'
+      armed: '{{ states(''alarm_control_panel.alarme_casa'') in [''armed_away'', ''armed_home'',
+        ''armed_night'', ''armed_vacation'', ''triggered''] }}'
+      # Template binary sensors that stay on for the confirmation window.
+      recent:
+        binary_sensor.area_externa_sensor_de_passagem_novo: binary_sensor.deteccao_recente_sensor_de_passagem
+        binary_sensor.lateral_casa: binary_sensor.deteccao_recente_lateral_casa
+        binary_sensor.fundos_casa: binary_sensor.deteccao_recente_fundos_casa
+      # Another sensor detected now or within the confirmation window.
+      human_now: >
+        {% set ns = namespace(hit=false) %}
+        {% for e in others if is_state(recent[e], 'on') %}{% set ns.hit = true %}{% endfor %}
+        {{ ns.hit }}
+  # Phase 1: does the same sensor keep detecting for the presence time?
+  # (completes at once when already confirmed; times out if it stays on).
+  - wait_template: '{{ human_now or is_state(first, ''off'') or others | select(''is_state'',
+      ''on'') | list | count > 0 }}'
+    timeout:
+      seconds: '{{ persist_s }}'
+    continue_on_timeout: true
+  - variables:
+      phase1_human: '{{ human_now or not wait.completed or others | select(''is_state'',
+        ''on'') | list | count > 0 }}'
+  # Phase 2: does another sensor detect within the confirmation window?
+  - wait_template: '{{ phase1_human or others | select(''is_state'', ''on'') | list
+      | count > 0 }}'
+    timeout:
+      minutes: '{{ window_min }}'
+    continue_on_timeout: true
+  - variables:
+      is_human: '{{ phase1_human or wait.completed }}'
+      partners: >
+        {% set ns = namespace(names=[]) %}
+        {% for e in others if is_state(recent[e], 'on') %}
+          {% set ns.names = ns.names + [state_attr(e, 'friendly_name')] %}
+        {% endfor %}
+        {{ ns.names }}
+      where: '{{ ([state_attr(first, ''friendly_name'')] + partners) | join('' + '') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ is_human }}'
+      sequence:
+      - action: counter.increment
+        target:
+          entity_id: counter.eventos_possivel_humano
+      - action: logbook.log
+        data:
+          name: Possível humano
+          message: '{{ where }}'
+          entity_id: counter.eventos_possivel_humano
+      - if:
+        - condition: template
+          value_template: '{{ armed }}'
+        then:
+        # alarm_trigger fails when the panel is already triggered.
+        - if:
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: alarm_control_panel.alarme_casa
+              state: triggered
+          then:
+          - action: alarm_control_panel.alarm_trigger
+            target:
+              entity_id: alarm_control_panel.alarme_casa
+        - action: switch.turn_on
+          target:
+            entity_id: switch.lampada_corredor_socket_1
+        - action: notify.mobile_app_android_ricardo
+          data:
+            title: 🚨 Alarme disparado - possível humano
+            message: '{{ where }} às {{ now().strftime(''%H:%M'') }}.'
+            data:
+              priority: high
+              ttl: 0
+    default:
+    - action: counter.increment
       target:
-        entity_id: alarm_control_panel.alarme_casa
-  - action: switch.turn_on
-    target:
-      entity_id: switch.lampada_corredor_socket_1
-  - action: notify.mobile_app_android_ricardo
-    data:
-      title: 🚨 Alarme disparado
-      message: '{{ trigger.to_state.name }} detectou movimento às {{ now().strftime(''%H:%M'')
-        }}.'
+        entity_id: counter.eventos_possivel_animal
+    - action: logbook.log
       data:
-        priority: high
-        ttl: 0
-  # Ignore further detections for 1 min to avoid a burst of notifications.
-  - delay:
-      minutes: 1
+        name: Possível animalzinho
+        message: '{{ where }}'
+        entity_id: counter.eventos_possivel_animal
+    - if:
+      - condition: template
+        value_template: "{{ armed and (now() - (states('input_datetime.alarme_ultimo_aviso_animal')\
+          \ | as_datetime(today_at()) | as_local)) >= timedelta(minutes=states('input_number.alarme_intervalo_aviso_animal')\
+          \ | int(10)) }}"
+      then:
+      - action: notify.mobile_app_android_ricardo
+        data:
+          title: 🐈 Possível animalzinho
+          message: '{{ where }} às {{ now().strftime(''%H:%M'') }} (alarme não disparado).'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.alarme_ultimo_aviso_animal
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
   mode: single
   max_exceeded: silent
+- id: '1792500000005'
+  alias: Alarme - zerar contadores à meia-noite
+  description: Zera os contadores de possível humano e possível animalzinho todo dia.
+  triggers:
+  - trigger: time
+    at: 00:00:00
+  conditions: []
+  actions:
+  - action: counter.reset
+    target:
+      entity_id:
+      - counter.eventos_possivel_animal
+      - counter.eventos_possivel_humano
+  mode: single

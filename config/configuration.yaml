@@ -54,6 +54,22 @@ template:
         state: >
           {{ ['sensor.eventos_hoje_sensor_de_passagem', 'sensor.eventos_hoje_lateral_casa',
               'sensor.eventos_hoje_fundos_casa'] | map('states') | map('int', 0) | sum }}
+  # "Detected recently": on while the sensor detects and for the confirmation
+  # window after it clears. Used to confirm a human with a second sensor
+  # (last_changed alone is not enough: restarts also change it).
+  - binary_sensor:
+      - name: Detecção recente - Sensor de passagem
+        unique_id: recent_detection_passage_sensor
+        state: "{{ is_state('binary_sensor.area_externa_sensor_de_passagem_novo', 'on') }}"
+        delay_off: "{{ {'minutes': states('input_number.alarme_janela_confirmacao') | int(2)} }}"
+      - name: Detecção recente - Lateral casa
+        unique_id: recent_detection_side_house
+        state: "{{ is_state('binary_sensor.lateral_casa', 'on') }}"
+        delay_off: "{{ {'minutes': states('input_number.alarme_janela_confirmacao') | int(2)} }}"
+      - name: Detecção recente - Fundos Casa
+        unique_id: recent_detection_back_house
+        state: "{{ is_state('binary_sensor.fundos_casa', 'on') }}"
+        delay_off: "{{ {'minutes': states('input_number.alarme_janela_confirmacao') | int(2)} }}"
 
 zha:
   # Local quirks for devices ZHA does not support out of the box.
@@ -118,3 +134,48 @@ lovelace:
       icon: mdi:shield-home
       show_in_sidebar: true
       filename: dashboards/alarme.yaml
+
+# Tunable settings for the human/animal classification (shown on the alarm
+# dashboard). No "initial" so values set in the UI survive restarts.
+input_number:
+  alarme_janela_confirmacao:
+    name: Janela de confirmação
+    icon: mdi:timer-sand
+    min: 1
+    max: 10
+    step: 1
+    unit_of_measurement: min
+    mode: slider
+  alarme_tempo_presenca:
+    name: Presença contínua para humano
+    icon: mdi:timer-outline
+    min: 30
+    max: 300
+    step: 10
+    unit_of_measurement: s
+    mode: slider
+  alarme_intervalo_aviso_animal:
+    name: Intervalo entre avisos de animal
+    icon: mdi:bell-sleep
+    min: 0
+    max: 60
+    step: 5
+    unit_of_measurement: min
+    mode: slider
+
+input_datetime:
+  alarme_ultimo_aviso_animal:
+    name: Último aviso de possível animal
+    has_date: true
+    has_time: true
+
+counter:
+  # Classified detections of the day (reset at midnight by automation).
+  eventos_possivel_animal:
+    name: Possível animalzinho
+    icon: mdi:cat
+    restore: true
+  eventos_possivel_humano:
+    name: Possível humano
+    icon: mdi:human-handsdown
+    restore: true

@@ -28,6 +28,20 @@ views:
           - type: heading
             heading: Eventos hoje
           - type: tile
+            entity: counter.eventos_possivel_humano
+            name: Possível humano
+            icon: mdi:human-handsdown
+            color: red
+            grid_options:
+              columns: 6
+          - type: tile
+            entity: counter.eventos_possivel_animal
+            name: Possível animalzinho
+            icon: mdi:cat
+            color: amber
+            grid_options:
+              columns: 6
+          - type: tile
             entity: sensor.eventos_hoje_total
             name: Total de detecções
             icon: mdi:motion-sensor
@@ -78,8 +92,32 @@ views:
             hours_to_show: 24
             target:
               entity_id:
+                - counter.eventos_possivel_humano
+                - counter.eventos_possivel_animal
                 - alarm_control_panel.alarme_casa
                 - binary_sensor.area_externa_sensor_de_passagem_novo
                 - binary_sensor.lateral_casa
                 - binary_sensor.fundos_casa
                 - switch.lampada_corredor_socket_1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Ajustes da classificação
+          - type: entities
+            entities:
+              - entity: input_number.alarme_janela_confirmacao
+                name: Janela para 2 sensores (min)
+              - entity: input_number.alarme_tempo_presenca
+                name: Presença contínua = humano (s)
+              - entity: input_number.alarme_intervalo_aviso_animal
+                name: Intervalo entre avisos de animal (min)
+              - entity: number.area_externa_sensor_de_passagem_novo_sensitivity
+                name: Sensibilidade do radar (0-10)
+          - type: markdown
+            content: >
+              **Possível humano**: 2 sensores diferentes dentro da janela,
+              ou o mesmo sensor detectando direto pelo tempo de presença.
+              Com o alarme armado, dispara, liga a lâmpada e notifica.
+
+              **Possível animalzinho**: detecção isolada. Com o alarme
+              armado, só notifica, no máximo uma vez por intervalo.
