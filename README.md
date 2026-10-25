@@ -127,8 +127,8 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 ## Roadmap
 
 - [x] Projeto versionado com docker-compose
-- [ ] Migrar o container antigo para o compose (seção [Migração](#migração-da-instalação-antiga-fazer-uma-vez))
-- [ ] Acesso remoto pela Cloudflare Tunnel
+- [x] Migrar o container antigo para o compose (seção [Migração](#migração-da-instalação-antiga-fazer-uma-vez))
+- [x] Acesso remoto pela Cloudflare Tunnel (https://casa.rmo.dev.br)
 - [ ] Notificações no celular para eventos dentro de um período (ideia abaixo)
 - [ ] Monitoramento: avisar quando a máquina ficar offline ou um sensor ficar indisponível (ideia abaixo)
 
