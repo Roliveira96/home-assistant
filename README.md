@@ -196,7 +196,14 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 | Alarme - classificar movimento (humano ou animal) | Cada detecção do Sensor de passagem novo, Lateral casa ou Fundos Casa é classificada (ver [Alarme](#alarme)). Com o alarme armado: **possível humano** dispara o alarme, liga a lampada corredor e notifica com prioridade alta; **possível animalzinho** só notifica, no máximo uma vez por intervalo |
 | Alarme - zerar contadores à meia-noite | Zera os contadores de possível humano e possível animalzinho |
 
-As notificações vão para `notify.mobile_app_android_ricardo` (app Companion no celular Android do Ricardo).
+Notificações:
+
+| Destino | Quem recebe | Usado em |
+|---|---|---|
+| `notify.celulares` (grupo, em `configuration.yaml`) | Ricardo (`mobile_app_android_ricardo`) e Jéssica (`mobile_app_android_jessica`) | alarme (humano/animal/disparo) e campainha |
+| `notify.mobile_app_android_ricardo` | só o Ricardo | avisos técnicos (Zigbee indisponível, teste de temperatura) e link do download do registro |
+
+Para incluir outro celular: instalar o app Companion, entrar com um usuário do HA e acrescentar o `mobile_app_<nome>` ao grupo `celulares` (exige reiniciar).
 
 ## Roadmap
 

@@ -200,6 +200,15 @@ input_number:
     unit_of_measurement: min
     mode: slider
 
+notify:
+  # Household phones: alarm and doorbell notifications go to everyone.
+  # Technical alerts (Zigbee, tests, downloads) stay on Ricardo's phone only.
+  - platform: group
+    name: celulares
+    services:
+      - service: mobile_app_android_ricardo
+      - service: mobile_app_android_jessica
+
 input_text:
   # "<url path>|<row count>" of the last export (set by alarme_exportar_registro).
   alarme_ultimo_export:

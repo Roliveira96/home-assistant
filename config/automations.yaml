@@ -233,7 +233,7 @@
         - action: switch.turn_on
           target:
             entity_id: switch.lampada_corredor_socket_1
-        - action: notify.mobile_app_android_ricardo
+        - action: notify.celulares
           data:
             title: 🚨 Alarme disparado - possível humano
             message: '{{ where }} às {{ now().strftime(''%H:%M'') }}.'
@@ -261,7 +261,7 @@
           \ | as_datetime(today_at()) | as_local)) >= timedelta(minutes=states('input_number.alarme_intervalo_aviso_animal')\
           \ | int(10)) }}"
       then:
-      - action: notify.mobile_app_android_ricardo
+      - action: notify.celulares
         data:
           title: 🐈 Possível animalzinho
           message: '{{ where }} às {{ now().strftime(''%H:%M'') }} (alarme não disparado).'
@@ -359,7 +359,7 @@
     - action: script.turn_on
       target:
         entity_id: script.campainha_luz_1min
-  - action: notify.mobile_app_android_ricardo
+  - action: notify.celulares
     data:
       title: 🔔 Campainha
       message: 'Tocaram a campainha às {{ now().strftime(''%H:%M'') }}{{ '' (luz do corredor
