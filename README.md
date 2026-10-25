@@ -116,6 +116,15 @@ O `configuration.yaml` já tem `use_x_forwarded_for` e `trusted_proxies` (127.0.
 |---|---|
 | **Casa** | badges (alarme, pessoas/animais/campainha hoje, luz do corredor, Zigbee fora do ar só quando houver); Alarme (armar/desarmar, modo noite); Campainha (última vez, toques, testar, luz); Hoje (pessoa/animal/disparos); Clima e temperatura (previsão `weather.forecast_casa`, temperatura/umidade da área externa e do escritório); Fotos (porta-retrato); Gráficos (temperatura e detecções em 24 h); Registro do alarme armado; Baixar registro e últimos eventos |
 | **Ajustes** | sons no notebook e testes; classificação pessoa × animal; detecções por sensor; toques da campainha (48 h) |
+| **Mesa** | tela fixa da mesa, **1440×900 sem rolagem** (barra lateral oculta): relógio e data, alarme, pessoa/animal/disparos, campainha e luz; foto grande (2 colunas) com previsão e gráfico de temperatura; temperaturas e últimas ocorrências do alarme armado |
+
+#### Tela da mesa (1440×900, sempre ligada)
+
+1. Abrir `http://192.168.3.111:9999/dashboard-alarme/mesa` (na rede de casa) ou `https://casa.rmo.dev.br/dashboard-alarme/mesa`, e marcar "Mantenha-me conectado" no login.
+2. Perfil → **Sempre ocultar a barra lateral** (vale só para aquele navegador).
+3. Tela cheia com **F11** e, no sistema daquela máquina, desligar a suspensão e o descanso de tela.
+
+O layout foi conferido com uma captura headless (Chrome + puppeteer) em viewport 1440×900.
 
 ### Porta-retrato
 

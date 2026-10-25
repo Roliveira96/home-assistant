@@ -423,3 +423,170 @@ views:
       target:
         entity_id:
         - script.campainha_tocar
+- title: Mesa
+  path: mesa
+  icon: mdi:monitor-dashboard
+  type: sections
+  max_columns: 4
+  sections:
+  - type: grid
+    cards:
+    - type: clock
+      clock_size: large
+      show_seconds: false
+      grid_options:
+        columns: full
+        rows: 2
+    - type: markdown
+      content: |
+        {%- set dias = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'] %}
+        {%- set meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'] %}
+        <center><b>{{ dias[now().weekday()] }}, {{ now().day }} de {{ meses[now().month - 1] }}</b></center>
+      grid_options:
+        columns: full
+        rows: 1
+    - type: alarm-panel
+      entity: alarm_control_panel.alarme_casa
+      name: Alarme
+      states:
+      - arm_home
+      - arm_night
+      - arm_away
+      grid_options:
+        columns: full
+    - type: tile
+      entity: counter.eventos_possivel_humano
+      name: Pessoa
+      icon: mdi:human-handsdown
+      color: red
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: tile
+      entity: counter.eventos_possivel_animal
+      name: Animal
+      icon: mdi:cat
+      color: amber
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: tile
+      entity: sensor.disparos_do_alarme_hoje
+      name: Disparos
+      icon: mdi:alarm-light
+      color: red
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: tile
+      entity: sensor.ultima_campainha
+      name: Campainha
+      icon: mdi:doorbell-video
+      color: blue
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: counter.campainha_hoje
+      name: Toques hoje
+      icon: mdi:doorbell
+      color: blue
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: switch.lampada_corredor_socket_1
+      name: Luz do corredor
+      icon: mdi:lightbulb
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: picture-entity
+      entity: camera.porta_retrato
+      show_name: false
+      show_state: false
+      camera_view: auto
+      aspect_ratio: '16:10'
+      tap_action:
+        action: none
+      hold_action:
+        action: none
+      grid_options:
+        columns: full
+    - type: weather-forecast
+      entity: weather.forecast_casa
+      name: Casa
+      show_current: true
+      show_forecast: true
+      forecast_type: daily
+      grid_options:
+        columns: 12
+    - type: history-graph
+      title: Temperatura (24 h)
+      hours_to_show: 24
+      entities:
+      - entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+        name: Externa
+      - entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+        name: Escrit. 1
+      - entity: sensor.escritorio_medidor_de_temperatura_temperatura
+        name: Escrit. 2
+      grid_options:
+        columns: 12
+  - type: grid
+    cards:
+    - type: tile
+      entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+      name: Externa
+      icon: mdi:home-thermometer-outline
+      color: deep-orange
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
+      name: Escrit. 1
+      icon: mdi:thermometer
+      color: orange
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_temperatura
+      name: Escrit. 2
+      icon: mdi:thermometer
+      color: orange
+      vertical: true
+      grid_options:
+        columns: 4
+        rows: 2
+    - type: markdown
+      title: Alarme armado — últimos
+      content: |
+        {%- set ev = (state_attr('sensor.registro_do_alarme_armado', 'eventos') or [])[:50] %}
+        {%- if not ev %}
+        Nenhum evento com o alarme armado.
+        {%- else %}
+        {%- set ns = namespace(groups=[], cur=none) %}
+        {%- for e in ev %}
+        {%- if ns.cur and ns.cur.tipo == e.tipo and ns.cur.sensores == e.sensores and ns.cur.day == e.hora[:5] %}
+        {%- set ns.cur = dict(ns.cur, first=e.hora[6:11], n=ns.cur.n + 1) %}
+        {%- else %}
+        {%- if ns.cur %}{% set ns.groups = ns.groups + [ns.cur] %}{% endif %}
+        {%- set ns.cur = {'tipo': e.tipo, 'sensores': e.sensores, 'day': e.hora[:5], 'last': e.hora[6:11], 'first': e.hora[6:11], 'n': 1} %}
+        {%- endif %}
+        {%- endfor %}
+        {%- set ns.groups = ns.groups + [ns.cur] %}
+        <table width="100%">
+        {%- for g in ns.groups[:8] %}
+        <tr><td>{{ '🧍' if g.tipo == 'humano' else '🐈' }}</td><td>{{ (g.day ~ ' ') if g.day != now().strftime('%d/%m') else '' }}{{ g.last if g.n == 1 else g.first ~ '–' ~ g.last }}</td><td>{{ '<b>' ~ g.sensores | replace('Sensor de passagem novo', 'Passagem') ~ '</b>' if g.tipo == 'humano' else g.sensores | replace('Sensor de passagem novo', 'Passagem') }}</td><td align="right">{{ '×' ~ g.n if g.n > 1 else '' }}</td></tr>
+        {%- endfor %}
+        </table>
+        {%- endif %}
+      grid_options:
+        columns: full
