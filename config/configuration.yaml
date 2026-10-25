@@ -228,10 +228,12 @@ counter:
 
 shell_command:
   # Plays a sound file on the notebook speakers through PipeWire.
-  # Variables: file (path inside the container), volume (0.0-1.0).
+  # Variables: file (path inside the container), volume (gain; >1 boosts).
+  # One second of trailing silence keeps ffmpeg from closing the stream
+  # before very short sounds are actually played.
   # Used by the alarme_som_* scripts (scripts.yaml).
   alarme_tocar_som: >-
     ffmpeg -hide_banner -loglevel error
     -i {{ file | default('/sounds/freedesktop/stereo/bell.oga') }}
-    -filter:a volume={{ volume | default(0.5) }}
+    -filter:a volume={{ volume | default(1.0) }},apad=pad_dur=1
     -f pulse "Home Assistant"

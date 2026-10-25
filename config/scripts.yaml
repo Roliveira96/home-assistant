@@ -30,4 +30,4 @@ alarme_som_animal:
   - action: shell_command.alarme_tocar_som
     data:
       file: /sounds/freedesktop/stereo/bell.oga
-      volume: 0.8
+      volume: 2.0
