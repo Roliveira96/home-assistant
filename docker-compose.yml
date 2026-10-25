@@ -9,6 +9,13 @@ services:
       - ./config:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
+      # Host audio (PipeWire's PulseAudio socket) and system sounds, used by
+      # shell_command.alarme_tocar_som. The directory is mounted (not the socket)
+      # so a PipeWire restart does not leave a stale bind mount.
+      - /run/user/1000/pulse:/run/pulse
+      - /usr/share/sounds:/sounds:ro
+    environment:
+      - PULSE_SERVER=unix:/run/pulse/native
     # Needed by the Bluetooth integration to manage the adapter over D-Bus.
     cap_add:
       - NET_ADMIN

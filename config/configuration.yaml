@@ -184,6 +184,12 @@ input_number:
     unit_of_measurement: min
     mode: slider
 
+input_boolean:
+  # Plays sounds on the notebook for classified detections while armed.
+  alarme_som_notebook:
+    name: Som no notebook
+    icon: mdi:volume-high
+
 input_datetime:
   alarme_ultimo_aviso_animal:
     name: Último aviso de possível animal
@@ -200,3 +206,12 @@ counter:
     name: Possível humano
     icon: mdi:human-handsdown
     restore: true
+
+shell_command:
+  # Plays a system sound on the notebook speakers through PipeWire.
+  # Variables: sound (file name without .oga), volume (0.0-1.0).
+  alarme_tocar_som: >-
+    ffmpeg -hide_banner -loglevel error
+    -i /sounds/freedesktop/stereo/{{ sound | default('alarm-clock-elapsed') }}.oga
+    -filter:a volume={{ volume | default(0.5) }}
+    -f pulse "Home Assistant"

@@ -136,6 +136,17 @@ Peças:
 | `binary_sensor.deteccao_recente_*` | template: fica ligado enquanto o sensor detecta e pela janela depois (não dá para usar `last_changed`, que muda também quando o HA reinicia) |
 | `counter.eventos_possivel_humano` / `counter.eventos_possivel_animal` | contagem do dia, zerada à meia-noite |
 
+### Som no notebook
+
+Com o alarme armado e `input_boolean.alarme_som_notebook` ligado (botão "Som no notebook" no painel), o notebook toca:
+
+| Classificação | Som | Volume |
+|---|---|---|
+| Possível humano | `alarm-clock-elapsed`, 3 vezes | 100% |
+| Possível animalzinho | `bell`, 1 vez, no máximo a cada "Intervalo entre avisos de animal" | 30% |
+
+Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/1000/pulse`) e os sons do sistema (`/usr/share/sounds`); o `shell_command.alarme_tocar_som` (variáveis `sound` e `volume`) toca com o `ffmpeg` do próprio container. O volume final também depende do volume do sistema (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, hoje 50%). O áudio do PipeWire só existe com a sessão do usuário ativa (lingering do systemd).
+
 ### Registro do alarme armado
 
 Toda detecção classificada dispara o evento `alarme_evento` (`tipo`, `sensores`, `armado` e, no futuro, `foto`). O sensor template `sensor.registro_do_alarme_armado` guarda os **50 últimos eventos com o alarme armado** no atributo `eventos` (sobrevive a reinicializações) e o painel mostra a tabela na seção "Registro do alarme armado". No logbook, os eventos com alarme armado vêm marcados com "(alarme armado)".

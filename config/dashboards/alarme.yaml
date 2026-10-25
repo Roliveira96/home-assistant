@@ -22,7 +22,13 @@ views:
             entity: switch.lampada_corredor_socket_1
             name: Lâmpada corredor
             grid_options:
-              columns: full
+              columns: 6
+          - type: tile
+            entity: input_boolean.alarme_som_notebook
+            name: Som no notebook
+            icon: mdi:volume-high
+            grid_options:
+              columns: 6
       - type: grid
         cards:
           - type: heading

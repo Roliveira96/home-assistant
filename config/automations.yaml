@@ -118,7 +118,9 @@
     e Fundos Casa. Possível humano: 2 sensores diferentes dentro da janela de confirmação,
     ou o mesmo sensor detectando direto pelo tempo de presença. Senão, possível
     animalzinho. Com o alarme armado, humano dispara o alarme, liga a lampada corredor
-    e notifica; animal só notifica, respeitando o intervalo entre avisos.'
+    e notifica; animal só notifica, respeitando o intervalo entre avisos. Com o
+    som no notebook ligado, humano toca o despertador alto 3x e animal um sino
+    baixo (com o mesmo intervalo).'
   triggers:
   - trigger: state
     entity_id:
@@ -217,6 +219,18 @@
             data:
               priority: high
               ttl: 0
+        - if:
+          - condition: state
+            entity_id: input_boolean.alarme_som_notebook
+            state: 'on'
+          then:
+          - repeat:
+              count: 3
+              sequence:
+              - action: shell_command.alarme_tocar_som
+                data:
+                  sound: alarm-clock-elapsed
+                  volume: 1.0
     default:
     - action: counter.increment
       target:
@@ -241,6 +255,15 @@
           entity_id: input_datetime.alarme_ultimo_aviso_animal
         data:
           datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - if:
+        - condition: state
+          entity_id: input_boolean.alarme_som_notebook
+          state: 'on'
+        then:
+        - action: shell_command.alarme_tocar_som
+          data:
+            sound: bell
+            volume: 0.3
   mode: single
   max_exceeded: silent
 - id: '1792500000005'
