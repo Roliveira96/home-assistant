@@ -42,6 +42,13 @@ views:
     tap_action:
       action: toggle
   - type: entity
+    entity: binary_sensor.sensor_frente_da_casa
+    name: Frente
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: red
+  - type: entity
     entity: sensor.zigbee_indisponiveis
     name: Zigbee fora do ar
     show_name: true
@@ -70,7 +77,7 @@ views:
     - type: markdown
       content: |
         🌙 **Modo noite automático**: arma às **00:00** e desarma às **07:30**.
-        À noite não toca som; pessoa liga a luz e notifica, animal só vai para o registro.
+        Só o **Sensor Frente da Casa** (pessoa real) dispara o alarme; os outros sensores só vão para o registro.
   - type: grid
     cards:
     - type: heading
@@ -235,6 +242,8 @@ views:
         name: Lateral
       - entity: binary_sensor.fundos_casa
         name: Fundos
+      - entity: binary_sensor.sensor_frente_da_casa
+        name: Frente (pessoa)
       - entity: alarm_control_panel.alarme_casa
         name: Alarme
   - type: grid
@@ -315,6 +324,7 @@ views:
         - alarm_control_panel.alarme_casa
         - switch.lampada_corredor_socket_1
         - script.campainha_tocar
+        - binary_sensor.sensor_frente_da_casa
 - title: Ajustes
   path: ajustes
   icon: mdi:tune

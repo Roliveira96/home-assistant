@@ -10,28 +10,6 @@
   conditions: []
   actions: []
   mode: single
-- id: '1792446037249'
-  alias: Automação sensor lateral casa
-  description: ''
-  triggers:
-  - type: occupied
-    device_id: 034700d56a3a1925373de65b0b15c31a
-    entity_id: dd52c9130824340d86c9d3f1ba3bfeb2
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
-  conditions:
-  - condition: time
-    after: '18:00:00'
-  actions:
-  - type: turn_on
-    device_id: b62c5e9c0c91d2e180772c366ebd358e
-    entity_id: 63af2b8ecfcd8fbcdbfeb9df83d2bf02
-    domain: switch
-  mode: single
 - id: '1792457875007'
   alias: 'Area Externa '
   description: ''
@@ -125,11 +103,9 @@
   description: 'Classifica cada detecção do Sensor de passagem novo, Lateral casa
     e Fundos Casa. Possível humano: 2 sensores diferentes dentro da janela de confirmação,
     ou o mesmo sensor detectando direto pelo tempo de presença. Senão, possível
-    animalzinho. Com o alarme armado, humano dispara o alarme, liga a lampada corredor
-    e notifica; animal só notifica, respeitando o intervalo entre avisos. Com o
-    som no notebook ligado, humano toca o despertador alto 3x e animal um sino
-    baixo (com o mesmo intervalo). No modo noite (00:00-07:30): sem som; humano
-    liga a lâmpada e notifica; animal só é registrado.'
+    animalzinho. Só registra (contadores, logbook e registro do alarme armado):
+    esses sensores pegam os gatos, então não disparam o alarme, não ligam a luz,
+    não notificam e não tocam som. Quem dispara é o Sensor Frente da Casa.'
   triggers:
   - trigger: state
     entity_id:
@@ -154,11 +130,6 @@
       persist_s: '{{ states(''input_number.alarme_tempo_presenca'') | int(60) }}'
       armed: '{{ states(''alarm_control_panel.alarme_casa'') in [''armed_away'', ''armed_home'',
         ''armed_night'', ''armed_vacation'', ''triggered''] }}'
-      # Night mode (armed automatically 00:00-07:30): people are home and
-      # asleep, so no notebook sound and no notification for animals.
-      night: '{{ is_state(''alarm_control_panel.alarme_casa'', ''armed_night'') or
-        (is_state(''alarm_control_panel.alarme_casa'', ''triggered'') and state_attr(''alarm_control_panel.alarme_casa'',
-        ''previous_state'') == ''armed_night'') }}'
       # Template binary sensors that stay on for the confirmation window.
       recent:
         binary_sensor.area_externa_sensor_de_passagem_novo: binary_sensor.deteccao_recente_sensor_de_passagem
@@ -215,37 +186,6 @@
           name: Possível humano
           message: '{{ where }}{{ '' (alarme armado)'' if armed else '''' }}'
           entity_id: counter.eventos_possivel_humano
-      - if:
-        - condition: template
-          value_template: '{{ armed }}'
-        then:
-        # alarm_trigger fails when the panel is already triggered.
-        - if:
-          - condition: not
-            conditions:
-            - condition: state
-              entity_id: alarm_control_panel.alarme_casa
-              state: triggered
-          then:
-          - action: alarm_control_panel.alarm_trigger
-            target:
-              entity_id: alarm_control_panel.alarme_casa
-        - action: switch.turn_on
-          target:
-            entity_id: switch.lampada_corredor_socket_1
-        - action: notify.celulares
-          data:
-            title: 🚨 Alarme disparado - possível humano
-            message: '{{ where }} às {{ now().strftime(''%H:%M'') }}.'
-            data:
-              priority: high
-              ttl: 0
-        - if:
-          - condition: template
-            value_template: '{{ not night and is_state(''input_boolean.alarme_som_notebook'',
-              ''on'') }}'
-          then:
-          - action: script.alarme_som_pessoa
     default:
     - action: counter.increment
       target:
@@ -255,27 +195,6 @@
         name: Possível animalzinho
         message: '{{ where }}{{ '' (alarme armado)'' if armed else '''' }}'
         entity_id: counter.eventos_possivel_animal
-    - if:
-      - condition: template
-        value_template: "{{ armed and not night and (now() - (states('input_datetime.alarme_ultimo_aviso_animal')\
-          \ | as_datetime(today_at()) | as_local)) >= timedelta(minutes=states('input_number.alarme_intervalo_aviso_animal')\
-          \ | int(10)) }}"
-      then:
-      - action: notify.celulares
-        data:
-          title: 🐈 Possível animalzinho
-          message: '{{ where }} às {{ now().strftime(''%H:%M'') }} (alarme não disparado).'
-      - action: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.alarme_ultimo_aviso_animal
-        data:
-          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
-      - if:
-        - condition: state
-          entity_id: input_boolean.alarme_som_notebook
-          state: 'on'
-        then:
-        - action: script.alarme_som_animal
   mode: single
   max_exceeded: silent
 - id: '1792500000005'
@@ -435,3 +354,92 @@
         name: Porta-retrato
         message: 'falha ao sincronizar: {{ result.stderr[:200] }}'
   mode: single
+- id: '1792500000012'
+  alias: Alarme - pessoa real na frente da casa (SNZB-06P)
+  description: O Sensor Frente da Casa (SONOFF SNZB-06P, radar de presença humana)
+    detecta pessoa com o alarme armado (qualquer modo, inclusive noite) → dispara
+    o alarme, notifica os celulares, grava no registro do alarme armado e toca no
+    notebook o som de pessoa (se o "Som no notebook" estiver ligado). É o único
+    sensor que dispara o alarme.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.sensor_frente_da_casa
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: alarm_control_panel.alarme_casa
+    state:
+    - armed_away
+    - armed_home
+    - armed_night
+    - armed_vacation
+    - triggered
+  actions:
+  # Consumed by the "Registro do alarme armado" sensor and the CSV history.
+  - event: alarme_evento
+    event_data:
+      tipo: humano
+      sensores: Sensor Frente da Casa
+      armado: true
+  - action: logbook.log
+    data:
+      name: Pessoa na frente da casa
+      message: Sensor Frente da Casa (alarme armado)
+      entity_id: binary_sensor.sensor_frente_da_casa
+  # alarm_trigger fails when the panel is already triggered.
+  - if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: alarm_control_panel.alarme_casa
+        state: triggered
+    then:
+    - action: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarme_casa
+  - action: notify.celulares
+    data:
+      title: 🚨 Alarme disparado - pessoa na frente da casa
+      message: Sensor Frente da Casa às {{ now().strftime('%H:%M') }}.
+      data:
+        priority: high
+        ttl: 0
+  - if:
+    - condition: state
+      entity_id: input_boolean.alarme_som_notebook
+      state: 'on'
+    then:
+    - action: script.alarme_som_pessoa
+  mode: single
+  max_exceeded: silent
+- id: '1792500000013'
+  alias: Frente da casa - luz do corredor à noite
+  description: Das 18h às 8h, cada detecção do Sensor Frente da Casa liga a lampada
+    corredor por 10 minutos (recomeça a cada nova passagem), com ou sem alarme. Se
+    a luz já estava ligada por outro motivo (manual, outro sensor, alarme), não mexe.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.sensor_frente_da_casa
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: time
+    after: '18:00:00'
+    before: 08:00:00
+  - condition: template
+    # Light off, or on only because of this timer or the doorbell timer.
+    value_template: '{{ is_state(''switch.lampada_corredor_socket_1'', ''off'') or
+      is_state(''script.luz_corredor_10min'', ''on'') or is_state(''script.campainha_luz_1min'',
+      ''on'') }}'
+  actions:
+  # Take over from the 1-minute doorbell timer so it does not switch the light
+  # off in the middle of these 10 minutes.
+  - action: script.turn_off
+    target:
+      entity_id: script.campainha_luz_1min
+  - action: script.turn_on
+    target:
+      entity_id: script.luz_corredor_10min
+  mode: single
+  max_exceeded: silent

@@ -60,6 +60,26 @@ campainha_luz_1min:
   - action: switch.turn_off
     target:
       entity_id: switch.lampada_corredor_socket_1
+luz_corredor_10min:
+  alias: Frente da casa - luz do corredor por 10 minutos
+  description: Liga a lampada corredor e desliga depois de 10 minutos. Chamado de
+    novo, recomeça a contagem (mode restart). Não desliga se o alarme estiver disparado.
+  icon: mdi:lightbulb-on
+  mode: restart
+  sequence:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.lampada_corredor_socket_1
+  - delay:
+      minutes: 10
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: alarm_control_panel.alarme_casa
+      state: triggered
+  - action: switch.turn_off
+    target:
+      entity_id: switch.lampada_corredor_socket_1
 alarme_exportar_registro:
   alias: Gerar download do registro do alarme
   description: Gera um CSV com os eventos do alarme armado entre "Download - início"

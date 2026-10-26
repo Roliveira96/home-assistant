@@ -147,6 +147,8 @@ Disparado, fica em `triggered` por 5 min e volta para armado.
 
 ### Humano ou animal (temos gatos)
 
+> **Desde 26/10/2026 só o Sensor Frente da Casa (SONOFF SNZB-06P, presença humana real) dispara o alarme.** Na noite de 25 para 26/10 a classificação confundiu gato com pessoa e disparou o alarme e a luz às 02:22 e às 03:33. Por isso a classificação abaixo agora **só registra** (contadores, logbook e registro do alarme armado): não dispara, não acende a luz, não notifica e não toca som.
+
 Os sensores pegam os gatos, então cada detecção é classificada:
 
 - **Possível humano**: dois sensores **diferentes** detectam dentro da *janela de confirmação* (padrão 2 min), **ou** o mesmo sensor fica detectando sem parar pelo *tempo de presença* (padrão 60 s; os PIR ZG-204Z ficam sempre 30–40 s ligados por detecção, por isso o padrão não pode ser 30 s).
@@ -164,12 +166,7 @@ Peças:
 
 ### Som no notebook
 
-Com o alarme armado (exceto no modo noite) e `input_boolean.alarme_som_notebook` ligado, o notebook toca:
-
-| Classificação | Script | Som | Volume |
-|---|---|---|---|
-| Possível humano | `script.alarme_som_pessoa` | escolhido em `input_select.alarme_som_pessoa` (Ding-dong, Mensagem, Login, Despertador), 2 vezes | 60% |
-| Possível animalzinho | `script.alarme_som_animal` | `bell`, 1 vez, no máximo a cada "Intervalo entre avisos de animal" | 80% |
+Com o alarme armado (em qualquer modo, inclusive noite) e `input_boolean.alarme_som_notebook` ligado, a detecção do **Sensor Frente da Casa** toca `script.alarme_som_pessoa`: o som escolhido em `input_select.alarme_som_pessoa` (Ding-dong, Mensagem, Login, Despertador), 2 vezes, a 60%. Os sensores antigos (classificação humano × animal) não tocam mais som; `script.alarme_som_animal` (`bell`, 80%) ficou só para o botão de teste.
 
 O painel tem os botões **Testar som de pessoa** e **Testar som de animal**. O `ding-dong.wav` (em `config/sounds/`) foi sintetizado com o `ffmpeg`.
 
@@ -179,7 +176,7 @@ Como funciona: o container monta o socket PulseAudio do PipeWire (`/run/user/100
 
 - **00:00**: se estiver desarmado, arma em `armed_night` (arma na hora). Um "ausente" armado manualmente não é alterado.
 - **07:30**: desarma, mas só se estiver no modo noite.
-- À noite há gente em casa dormindo: **sem som no notebook**; **possível humano** liga a lâmpada e notifica o celular; **possível animalzinho** só vai para o registro (sem notificação).
+- À noite o Sensor Frente da Casa dispara o alarme, notifica e toca som, como nos outros modos. Os sensores antigos só vão para o registro.
 - Também ficam quietos entre 00:00 e 07:30: o aviso de Zigbee indisponível (fica para o lembrete das 9h) e o teste de temperatura.
 
 ### Radar e a confirmação de humano
@@ -212,14 +209,15 @@ As automações atuais ficam em `config/automations.yaml` e podem ser editadas p
 
 | Automação | O que faz |
 |---|---|
-| Automação sensor lateral casa | Sensor de presença lateral ocupado após as 18h → liga o interruptor |
 | Area Externa | Gatilho de dispositivo entre 18h e 08h → liga o mesmo interruptor |
 | Nova automação | Botão pressionado → ainda sem ação (rascunho) |
 | Campainha - botão | **Botão Campainha** (seção "Campainha" do painel: última vez, toques hoje, testar, luz e histórico): cada toque → ding-dong completo 2x no notebook, notificação e **luz do corredor por 1 minuto** (`script.campainha_luz_1min`, recomeça a cada toque; não mexe se a luz já estava ligada por outro motivo; não apaga com o alarme disparado). O ZG-101ZL aparece no ZHA como interruptor: 1 clique = `toggle`, 2 cliques = `on`, segurar = `off` (evento `zha_event`) |
 | Teste - temperatura abaixo de 19.4 | Medidor do escritório abaixo de 19,4 °C → notificação no celular (teste) |
 | Aviso - Zigbee indisponível | Usa o sensor `sensor.zigbee_indisponiveis` (template em `configuration.yaml`, conta os dispositivos ZHA com todas as entidades indisponíveis). Notifica o celular quando o número aumenta e fica assim por 30 min, lembra às 9h enquanto houver algum fora e avisa quando todos voltam |
 
-| Alarme - classificar movimento (humano ou animal) | Cada detecção do Sensor de passagem novo, Lateral casa ou Fundos Casa é classificada (ver [Alarme](#alarme)). Com o alarme armado: **possível humano** dispara o alarme, liga a lampada corredor e notifica com prioridade alta; **possível animalzinho** só notifica, no máximo uma vez por intervalo |
+| Alarme - classificar movimento (humano ou animal) | Cada detecção do Sensor de passagem novo, Lateral casa ou Fundos Casa é classificada (ver [Alarme](#alarme)). **Só registra** (contadores, logbook, registro do alarme armado); não dispara o alarme, não liga a luz, não notifica e não toca som |
+| Alarme - pessoa real na frente da casa (SNZB-06P) | **Sensor Frente da Casa** (SONOFF SNZB-06P, radar de presença humana, área Frente da casa, `binary_sensor.sensor_frente_da_casa`) detecta com o alarme armado (qualquer modo, inclusive noite) → **dispara o alarme**, notifica os celulares (prioridade alta), grava no registro do alarme armado e toca o som de pessoa (`script.alarme_som_pessoa`) se o "Som no notebook" estiver ligado. É o único sensor que dispara o alarme |
+| Frente da casa - luz do corredor à noite | Das **18h às 8h**, com ou sem alarme, cada detecção do **Sensor Frente da Casa** liga a lampada corredor por **10 minutos** (`script.luz_corredor_10min`, recomeça a cada nova passagem; não apaga com o alarme disparado). Se a luz já estava ligada por outro motivo (manual, sensor lateral, alarme), não mexe; se estava no minuto da campainha, assume e conta os 10 min |
 | Alarme - zerar contadores à meia-noite | Zera os contadores de possível humano e possível animalzinho |
 
 Notificações:
