@@ -525,13 +525,22 @@ views:
       grid_options:
         columns: full
   - type: grid
-    column_span: 2
     cards:
     - type: iframe
       url: https://camera.dev.studio4you.com.br/?embed=1&token=cftv_b9024ac05290e25276ce8ede62fab06f
       aspect_ratio: 16/9
       grid_options:
         columns: full
+    - type: weather-forecast
+      entity: weather.forecast_casa
+      name: Casa
+      show_current: true
+      show_forecast: true
+      forecast_type: daily
+      grid_options:
+        columns: full
+  - type: grid
+    cards:
     - type: picture-entity
       entity: camera.porta_retrato
       show_name: false
@@ -543,15 +552,7 @@ views:
       hold_action:
         action: none
       grid_options:
-        columns: 6
-    - type: weather-forecast
-      entity: weather.forecast_casa
-      name: Casa
-      show_current: true
-      show_forecast: true
-      forecast_type: daily
-      grid_options:
-        columns: 6
+        columns: full
     - type: history-graph
       title: Temperatura (24 h)
       hours_to_show: 24
@@ -563,7 +564,7 @@ views:
       - entity: sensor.escritorio_medidor_de_temperatura_temperatura
         name: Escrit. 2
       grid_options:
-        columns: 12
+        columns: full
   - type: grid
     cards:
     - type: tile
