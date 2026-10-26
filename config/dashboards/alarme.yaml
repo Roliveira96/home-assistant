@@ -83,6 +83,14 @@ views:
       name: Câmera Corredor (Ao vivo)
       camera_view: live
       show_state: false
+    - type: button
+      name: Abrir Central CFTV (Ao Vivo)
+      icon: mdi:cctv
+      tap_action:
+        action: url
+        url_path: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
+      grid_options:
+        columns: full
   - type: grid
     cards:
     - type: heading

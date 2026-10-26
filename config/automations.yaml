@@ -483,3 +483,55 @@
       entity_id: script.luz_corredor_10min
   mode: single
   max_exceeded: silent
+- id: '1792500000014'
+  alias: CFTV - Controle remoto via Webhook
+  description: Recebe comandos enviados pela Central CFTV na VPS (Luz, Sirene, Som) protegidos por token.
+  triggers:
+  - trigger: webhook
+    webhook_id: cftv_comando
+    allowed_methods:
+    - POST
+    local_only: false
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.json.token == 'cftv_b9024ac05290e25276ce8ede62fab06f' }}"
+  actions:
+  - choose:
+    # Ação 1: Acender luz do corredor por 10 min
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.json.action == 'luz' }}"
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.luz_corredor_10min
+      - action: logbook.log
+        data:
+          name: Central CFTV
+          message: Luz do corredor acionada remotamente
+    # Ação 2: Disparar alarme/sirene
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.json.action == 'sirene' }}"
+      sequence:
+      - action: alarm_control_panel.alarm_trigger
+        target:
+          entity_id: alarm_control_panel.alarme_casa
+      - action: logbook.log
+        data:
+          name: Central CFTV
+          message: Sirene de alarme acionada remotamente
+    # Ação 3: Tocar ding-dong / som no notebook
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.json.action == 'som' }}"
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.campainha_tocar
+      - action: logbook.log
+        data:
+          name: Central CFTV
+          message: Som de aviso tocado no notebook
+  mode: queued
+  max: 10
