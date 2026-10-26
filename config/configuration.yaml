@@ -7,8 +7,10 @@ homeassistant:
   # media/fotos (kept out of git: the repository is public).
   media_dirs:
     local: /config/media
+    cameras: /mnt/hd-externo/cameras
   allowlist_external_dirs:
     - /config/media
+    - /mnt/hd-externo
 
 # Load frontend themes from the themes folder
 frontend:
@@ -297,3 +299,5 @@ shell_command:
   fotos_proxima: python3 /config/fotos/next_photo.py
   # Resized copies of ~/Pictures for the photo frame (config/fotos/sync_photos.py).
   fotos_sincronizar: python3 /config/fotos/sync_photos.py
+  # Cuts a 60-second event clip from continuous recordings (config/camera/make_clip.py).
+  camera_make_clip: python3 /config/camera/make_clip.py "{{ kind }}" "{{ label }}" "{{ epoch }}" "{{ snapshot | default('') }}"

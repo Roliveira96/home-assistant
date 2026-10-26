@@ -109,3 +109,31 @@ alarme_exportar_registro:
         (expira em 24 h).'
       data:
         clickAction: '{{ path }}'
+camera_cortar_clipe:
+  alias: Câmera - Cortar clipe de 60 s no HD
+  description: Aguarda 55 segundos para a gravação contínua cobrir o evento e corta o clipe de 60 s no HD externo.
+  icon: mdi:video-vintage
+  mode: parallel
+  max: 10
+  fields:
+    kind:
+      description: Pasta no HD (sensores ou alarme)
+      example: alarme
+    label:
+      description: Identificador do evento
+      example: pessoa_frente
+    epoch:
+      description: Epoch timestamp do evento
+      example: 1792500000
+    snapshot:
+      description: Caminho do snapshot opcional
+      example: /config/media/camera/foto.jpg
+  sequence:
+  - delay:
+      seconds: 55
+  - action: shell_command.camera_make_clip
+    data:
+      kind: '{{ kind }}'
+      label: '{{ label }}'
+      epoch: '{{ epoch }}'
+      snapshot: '{{ snapshot | default('''') }}'

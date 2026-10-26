@@ -271,6 +271,24 @@
       # Light already on and not by a previous doorbell press: leave it alone.
       light: '{{ is_state(''switch.lampada_corredor_socket_1'', ''off'') or is_state(''script.campainha_luz_1min'',
         ''on'') }}'
+      snap_time: '{{ now().strftime(''%Y-%m-%d_%H-%M-%S'') }}'
+      snap_path: /config/media/camera/{{ snap_time }}_campainha.jpg
+      snap_url: /media/local/camera/{{ snap_time }}_campainha.jpg
+      snap_epoch: '{{ now().timestamp() | int }}'
+  - action: camera.snapshot
+    target:
+      entity_id: camera.camera_corredor_mainstream
+    data:
+      filename: '{{ snap_path }}'
+  - action: script.turn_on
+    target:
+      entity_id: script.camera_cortar_clipe
+    data:
+      variables:
+        kind: sensores
+        label: campainha
+        epoch: '{{ snap_epoch }}'
+        snapshot: '{{ snap_path }}'
   - if:
     - condition: template
       value_template: '{{ light }}'
@@ -286,6 +304,7 @@
       data:
         priority: high
         ttl: 0
+        image: '{{ snap_url }}'
   - action: logbook.log
     data:
       name: Campainha
@@ -376,12 +395,32 @@
     - armed_vacation
     - triggered
   actions:
+  - variables:
+      snap_time: '{{ now().strftime(''%Y-%m-%d_%H-%M-%S'') }}'
+      snap_path: /config/media/camera/{{ snap_time }}_pessoa_frente.jpg
+      snap_url: /media/local/camera/{{ snap_time }}_pessoa_frente.jpg
+      snap_epoch: '{{ now().timestamp() | int }}'
+  - action: camera.snapshot
+    target:
+      entity_id: camera.camera_corredor_mainstream
+    data:
+      filename: '{{ snap_path }}'
+  - action: script.turn_on
+    target:
+      entity_id: script.camera_cortar_clipe
+    data:
+      variables:
+        kind: alarme
+        label: pessoa_frente
+        epoch: '{{ snap_epoch }}'
+        snapshot: '{{ snap_path }}'
   # Consumed by the "Registro do alarme armado" sensor and the CSV history.
   - event: alarme_evento
     event_data:
       tipo: humano
       sensores: Sensor Frente da Casa
       armado: true
+      foto: '{{ snap_url }}'
   - action: logbook.log
     data:
       name: Pessoa na frente da casa
@@ -405,6 +444,7 @@
       data:
         priority: high
         ttl: 0
+        image: '{{ snap_url }}'
   - if:
     - condition: state
       entity_id: input_boolean.alarme_som_notebook

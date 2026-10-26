@@ -78,6 +78,11 @@ views:
       content: |
         🌙 **Modo noite automático**: arma às **00:00** e desarma às **07:30**.
         Só o **Sensor Frente da Casa** (pessoa real) dispara o alarme; os outros sensores só vão para o registro.
+    - type: picture-entity
+      entity: camera.camera_corredor_mainstream
+      name: Câmera Corredor (Ao vivo)
+      camera_view: live
+      show_state: false
   - type: grid
     cards:
     - type: heading

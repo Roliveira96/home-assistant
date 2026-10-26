@@ -308,19 +308,12 @@ Pontos a decidir:
 
 Observação: a integração `google_cloud` (texto para voz) que já existe é outra coisa e hoje dá erro 403 porque a API Text-to-Speech não está ativada no projeto do Google Cloud.
 
-### Ideia: câmeras IP tirando foto nos eventos do alarme
+### Câmeras de segurança (Tapo C320WS)
 
-**Objetivo:** com o alarme armado, a cada detecção (humano **ou** animal) tirar uma foto da câmera mais próxima, para mapear o que está acontecendo e conferir se a classificação acerta.
-
-Como encaixar no que já existe:
-
-1. **Integrar as câmeras** ao HA. Preferir câmeras com **RTSP/ONVIF** (integração `onvif` ou `generic`); o `go2rtc` já está ativo e ajuda no streaming. Evitar modelos só-nuvem.
-2. **Mapear sensor → câmera** (ex.: Lateral casa → câmera lateral) num dicionário na automação.
-3. **Nova automação** com gatilho no evento `alarme_evento` (com `armado: true`):
-   - `camera.snapshot` para `/config/www/snapshots/<data>_<hora>_<sensor>.jpg` (ou `/media`);
-   - notificação no celular com a imagem anexada (`data.image`), inclusive para animal;
-   - repassar o caminho da foto no campo `foto` do evento, para a tabela do **Registro do alarme armado** mostrar a miniatura.
-4. **Limpeza**: apagar fotos com mais de X dias (`shell_command` ou automação diária) para não lotar o disco.
-5. **Privacidade**: as fotos ficam **fora do git** (`config/www/` e `config/media/` já estão no `.gitignore`, o repositório é público). Arquivos em `/config/www` ficam acessíveis em `/local/...` para quem souber o caminho; preferir `/media` se as fotos forem sensíveis.
+- **Câmera do corredor**: TP-Link Tapo C320WS integrada via ONVIF (`camera.camera_corredor_mainstream`) e exibida ao vivo no painel da Casa.
+- **Gravação contínua 24/7 (DVR)**: serviço `camera-recorder` em Python e FFmpeg, salvando fragmentos de 1 minuto em MP4 (`/mnt/hd-externo/cameras/continuo/`). Retenção automática em disco (>95% apaga os arquivos mais antigos).
+- **Clipes de 60 segundos nos eventos**: quando o alarme dispara ou a campainha toca, o script `config/camera/make_clip.py` corta 60 segundos (10 s antes e 50 s depois) a partir dos arquivos contínuos e salva em `/mnt/hd-externo/cameras/alarme/` ou `/sensores/`.
+- **Fotos nas notificações**: a cada disparo ou campainha, um snapshot instantâneo é salvo em `/config/media/camera/` e enviado na notificação dos celulares.
+- **Streaming externo (fora de casa)**: serviço `camera-vps-stream` para envio ativo (RTSP PUSH) para a VPS externa com MediaMTX e WebRTC (evitando o túnel da Cloudflare e independente de IP dinâmico em casa).
 
 Futuro: com câmeras, dá para trocar a heurística humano/animal por **detecção de pessoa por imagem** (ex.: Frigate), bem mais confiável.

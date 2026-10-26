@@ -17,6 +17,10 @@ services:
       # Notebook photos (also shared on the LAN as \\192.168.3.111\ricardo\Pictures),
       # read-only; config/fotos/sync_photos.py makes resized copies for the photo frame.
       - /home/ricardo/Pictures:/pictures:ro
+      # External disk (fstab: UUID=FEDB-7740 on /mnt/hd-externo) with the camera
+      # recordings; HA cuts the event clips (config/camera/make_clip.py). The
+      # parent folder is shared with rslave so a later mount still shows up.
+      - /mnt:/mnt:rslave
     environment:
       - PULSE_SERVER=unix:/run/pulse/native
     # Needed by the Bluetooth integration to manage the adapter over D-Bus.
@@ -26,6 +30,43 @@ services:
     devices:
       # Sonoff Zigbee 3.0 USB Dongle Plus V2, used by the ZHA integration.
       - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_686e6746c078f011af23f2eba7772636-if00-port0:/dev/ttyUSB0
+
+  camera-recorder:
+    build:
+      context: ./camera-recorder
+      network: host
+    container_name: camera-recorder
+    restart: unless-stopped
+    # Host networking reaches the camera on the LAN like any other device.
+    network_mode: host
+    volumes:
+      - /mnt:/mnt:rslave
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=America/Sao_Paulo
+      - CAMERA_RTSP_URL=${CAMERA_RTSP_URL:-}
+      - BASE_DIR=/mnt/hd-externo/cameras
+      - MAX_USAGE_PERCENT=95
+
+  camera-vps-stream:
+    image: home-assistant-camera-recorder
+    container_name: camera-vps-stream
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - CAMERA_RTSP_URL=${CAMERA_RTSP_URL:-}
+      - VPS_RTSP_PUSH_URL=${VPS_RTSP_PUSH_URL:-}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        if [ -z "$$VPS_RTSP_PUSH_URL" ]; then
+          echo "VPS_RTSP_PUSH_URL not set; stream to VPS disabled.";
+          sleep infinity;
+        fi;
+        while true; do
+          ffmpeg -hide_banner -loglevel warning -rtsp_transport tcp -i "$$CAMERA_RTSP_URL" -c copy -f rtsp "$$VPS_RTSP_PUSH_URL" || true;
+          sleep 5;
+        done
 
   cloudflared:
     image: cloudflare/cloudflared:latest
