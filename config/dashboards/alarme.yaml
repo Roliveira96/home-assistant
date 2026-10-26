@@ -80,7 +80,7 @@ views:
         Só o **Sensor Frente da Casa** (pessoa real) dispara o alarme; os outros sensores só vão para o registro.
     - type: iframe
       url: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
-      aspect_ratio: 16/11
+      aspect_ratio: 16/9
       grid_options:
         columns: full
     - type: button
@@ -527,6 +527,11 @@ views:
   - type: grid
     column_span: 2
     cards:
+    - type: iframe
+      url: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
+      aspect_ratio: 16/9
+      grid_options:
+        columns: full
     - type: picture-entity
       entity: camera.porta_retrato
       show_name: false
@@ -538,7 +543,7 @@ views:
       hold_action:
         action: none
       grid_options:
-        columns: full
+        columns: 6
     - type: weather-forecast
       entity: weather.forecast_casa
       name: Casa
@@ -546,7 +551,7 @@ views:
       show_forecast: true
       forecast_type: daily
       grid_options:
-        columns: 12
+        columns: 6
     - type: history-graph
       title: Temperatura (24 h)
       hours_to_show: 24
