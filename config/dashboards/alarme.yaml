@@ -79,7 +79,7 @@ views:
         🌙 **Modo noite automático**: arma às **00:00** e desarma às **07:30**.
         Só o **Sensor Frente da Casa** (pessoa real) dispara o alarme; os outros sensores só vão para o registro.
     - type: iframe
-      url: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
+      url: https://camera.dev.studio4you.com.br/?embed=1&token=cftv_b9024ac05290e25276ce8ede62fab06f
       aspect_ratio: 16/9
       grid_options:
         columns: full
@@ -528,7 +528,7 @@ views:
     column_span: 2
     cards:
     - type: iframe
-      url: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
+      url: https://camera.dev.studio4you.com.br/?embed=1&token=cftv_b9024ac05290e25276ce8ede62fab06f
       aspect_ratio: 16/9
       grid_options:
         columns: full
