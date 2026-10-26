@@ -230,12 +230,12 @@
       entity_id: alarm_control_panel.alarme_casa
   mode: single
 - id: '1792500000007'
-  alias: Alarme - desarmar modo noite às 07:30
-  description: Desarma o Alarme casa às 07:30 se ele estiver no modo noite (um "ausente"
+  alias: Alarme - desarmar modo noite às 08:00
+  description: Desarma o Alarme casa às 08:00 se ele estiver no modo noite (um "ausente"
     armado manualmente continua armado).
   triggers:
   - trigger: time
-    at: 07:30:00
+    at: 08:00:00
   conditions:
   - condition: template
     value_template: '{{ is_state(''alarm_control_panel.alarme_casa'', ''armed_night'')
@@ -378,8 +378,8 @@
   description: O Sensor Frente da Casa (SONOFF SNZB-06P, radar de presença humana)
     detecta pessoa com o alarme armado (qualquer modo, inclusive noite) → dispara
     o alarme, notifica os celulares, grava no registro do alarme armado e toca no
-    notebook o som de pessoa (se o "Som no notebook" estiver ligado). É o único
-    sensor que dispara o alarme.
+    notebook o som de pessoa (se o "Som no notebook" estiver ligado e fora do horário
+    silencioso da noite 00:00-08:00). É o único sensor que dispara o alarme.
   triggers:
   - trigger: state
     entity_id: binary_sensor.sensor_frente_da_casa
@@ -449,6 +449,9 @@
     - condition: state
       entity_id: input_boolean.alarme_som_notebook
       state: 'on'
+    - condition: template
+      value_template: >-
+        {{ now().hour >= 8 and not (is_state('alarm_control_panel.alarme_casa', 'armed_night') or state_attr('alarm_control_panel.alarme_casa', 'previous_state') == 'armed_night') }}
     then:
     - action: script.alarme_som_pessoa
   mode: single
