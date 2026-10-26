@@ -504,45 +504,38 @@ views:
       icon: mdi:home-thermometer-outline
       color: deep-orange
       grid_options:
-        columns: 4
+        columns: 6
     - type: tile
       entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
       name: Escritório 1
       icon: mdi:thermometer
       color: orange
       grid_options:
-        columns: 4
+        columns: 6
     - type: tile
       entity: sensor.escritorio_medidor_de_temperatura_temperatura
       name: Escritório 2
       icon: mdi:thermometer
       color: orange
       grid_options:
-        columns: 4
+        columns: 6
+    - type: tile
+      entity: sensor.escritorio_medidor_de_temperatura_e_umidade_umidade
+      name: Umidade escrit.
+      icon: mdi:water-percent
+      color: light-blue
+      grid_options:
+        columns: 6
 
   - type: grid
-    column_span: 2
     cards:
-    # Topo: Câmera e Porta-Retrato lado a lado em tamanho grande e dimensões idênticas
+    # Topo: Câmera CFTV em tamanho grande ocupando a largura total da seção
     - type: iframe
       url: https://camera.dev.studio4you.com.br/?embed=1&token=cftv_b9024ac05290e25276ce8ede62fab06f
       aspect_ratio: '16:10'
       grid_options:
-        columns: 6
-    - type: picture-entity
-      entity: camera.porta_retrato
-      show_name: false
-      show_state: false
-      camera_view: auto
-      aspect_ratio: '16:10'
-      tap_action:
-        action: none
-      hold_action:
-        action: none
-      grid_options:
-        columns: 6
+        columns: full
 
-    # Grid de Sensores da Casa e Disparos
     - type: heading
       heading: Sensores & Detecções da Casa
       icon: mdi:radar
@@ -555,28 +548,28 @@ views:
       icon: mdi:human-handsdown
       color: red
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: binary_sensor.area_externa_sensor_de_passagem_novo
       name: Passagem Externa
       icon: mdi:walk
       color: deep-orange
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: binary_sensor.lateral_casa
       name: Lateral
       icon: mdi:home-export-outline
       color: amber
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: binary_sensor.fundos_casa
       name: Fundos
       icon: mdi:home-floor-b
       color: amber
       grid_options:
-        columns: 3
+        columns: 6
 
     - type: tile
       entity: sensor.disparos_do_alarme_hoje
@@ -584,28 +577,44 @@ views:
       icon: mdi:alarm-light
       color: red
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: counter.eventos_possivel_humano
       name: Pessoas Hoje
       icon: mdi:human-handsdown
       color: red
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: counter.eventos_possivel_animal
       name: Animais Hoje
       icon: mdi:cat
       color: amber
       grid_options:
-        columns: 3
+        columns: 6
     - type: tile
       entity: counter.campainha_hoje
       name: Toques Campainha
       icon: mdi:doorbell
       color: blue
       grid_options:
-        columns: 3
+        columns: 6
+
+  - type: grid
+    cards:
+    # Topo: Porta-Retrato em tamanho grande, dimensões idênticas à Câmera
+    - type: picture-entity
+      entity: camera.porta_retrato
+      show_name: false
+      show_state: false
+      camera_view: auto
+      aspect_ratio: '16:10'
+      tap_action:
+        action: none
+      hold_action:
+        action: none
+      grid_options:
+        columns: full
 
     # Histórico de Temperatura 24h
     - type: history-graph
@@ -619,4 +628,4 @@ views:
       - entity: sensor.escritorio_medidor_de_temperatura_temperatura
         name: Escrit. 2
       grid_options:
-        columns: 12
+        columns: full
