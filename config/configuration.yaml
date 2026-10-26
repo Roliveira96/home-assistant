@@ -181,6 +181,12 @@ lovelace:
       icon: mdi:home
       show_in_sidebar: true
       filename: dashboards/alarme.yaml
+    dashboard-cftv:
+      mode: yaml
+      title: Câmeras CFTV
+      icon: mdi:cctv
+      show_in_sidebar: true
+      filename: dashboards/cftv.yaml
 
 # Tunable settings for the human/animal classification (shown on the alarm
 # dashboard). No "initial" so values set in the UI survive restarts.

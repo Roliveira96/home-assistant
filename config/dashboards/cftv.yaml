@@ -1,0 +1,10 @@
+title: Câmeras CFTV
+views:
+- title: Câmeras
+  path: cameras
+  icon: mdi:cctv
+  panel: true
+  cards:
+  - type: iframe
+    url: https://camera.dev.studio4you.com.br/?token=cftv_b9024ac05290e25276ce8ede62fab06f
+    aspect_ratio: 100%
