@@ -64,8 +64,15 @@ services:
           sleep infinity;
         fi;
         while true; do
-          ffmpeg -hide_banner -loglevel warning -rtsp_transport tcp -i "$$CAMERA_RTSP_URL" -c copy -f rtsp "$$VPS_RTSP_PUSH_URL" || true;
-          sleep 5;
+          echo "[camera-vps-stream] Iniciando envio RTSP para VPS...";
+          ffmpeg -nostdin -hide_banner -loglevel warning \
+            -rtsp_transport tcp -timeout 10000000 \
+            -i "$$CAMERA_RTSP_URL" \
+            -c copy \
+            -rtsp_transport tcp -timeout 10000000 \
+            -f rtsp "$$VPS_RTSP_PUSH_URL" || true;
+          echo "[camera-vps-stream] Conexão encerrada, reconectando em 3s...";
+          sleep 3;
         done
 
   cloudflared:
