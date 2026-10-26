@@ -457,19 +457,21 @@
   mode: single
   max_exceeded: silent
 - id: '1792500000013'
-  alias: Frente da casa - luz do corredor à noite
-  description: Das 18h às 8h, cada detecção do Sensor Frente da Casa liga a lampada
-    corredor por 10 minutos (recomeça a cada nova passagem), com ou sem alarme. Se
-    a luz já estava ligada por outro motivo (manual, outro sensor, alarme), não mexe.
+  alias: Corredor - luz à noite por presença/pessoa
+  description: Das 18h às 8h, a detecção de pessoa (pelo Sensor Frente da Casa ou pela
+    IA de Detecção de Pessoa da Câmera) liga a lâmpada do corredor por 10 minutos (recomeça
+    a cada nova passagem), com ou sem alarme. Se a luz já estava ligada por outro motivo, não mexe.
   triggers:
   - trigger: state
-    entity_id: binary_sensor.sensor_frente_da_casa
+    entity_id:
+    - binary_sensor.sensor_frente_da_casa
+    - binary_sensor.camera_corredor_person_detection
     from: 'off'
     to: 'on'
   conditions:
   - condition: time
     after: '18:00:00'
-    before: 08:00:00
+    before: '08:00:00'
   - condition: template
     # Light off, or on only because of this timer or the doorbell timer.
     value_template: '{{ is_state(''switch.lampada_corredor_socket_1'', ''off'') or
