@@ -50,6 +50,12 @@ campainha_luz_1min:
   - action: switch.turn_on
     target:
       entity_id: switch.lampada_corredor_socket_1
+  # Area lamps may be switched off at the wall (unavailable): never let them
+  # block the corridor light.
+  - action: light.turn_on
+    continue_on_error: true
+    target:
+      entity_id: light.luz_corredor
   - delay:
       minutes: 1
   - condition: not
@@ -60,6 +66,12 @@ campainha_luz_1min:
   - action: switch.turn_off
     target:
       entity_id: switch.lampada_corredor_socket_1
+  # Area lamps may be switched off at the wall (unavailable): never let them
+  # block the corridor light.
+  - action: light.turn_off
+    continue_on_error: true
+    target:
+      entity_id: light.luz_corredor
 luz_corredor_10min:
   alias: Frente da casa - luz do corredor por 10 minutos
   description: Liga a lampada corredor e desliga depois de 10 minutos. Chamado de
@@ -70,6 +82,12 @@ luz_corredor_10min:
   - action: switch.turn_on
     target:
       entity_id: switch.lampada_corredor_socket_1
+  # Area lamps may be switched off at the wall (unavailable): never let them
+  # block the corridor light.
+  - action: light.turn_on
+    continue_on_error: true
+    target:
+      entity_id: light.luz_corredor
   - delay:
       minutes: 10
   - condition: not
@@ -80,6 +98,12 @@ luz_corredor_10min:
   - action: switch.turn_off
     target:
       entity_id: switch.lampada_corredor_socket_1
+  # Area lamps may be switched off at the wall (unavailable): never let them
+  # block the corridor light.
+  - action: light.turn_off
+    continue_on_error: true
+    target:
+      entity_id: light.luz_corredor
 alarme_exportar_registro:
   alias: Gerar download do registro do alarme
   description: Gera um CSV com os eventos do alarme armado entre "Download - início"

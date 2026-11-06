@@ -115,6 +115,15 @@ template:
           tipo: "{{ trigger.event.data.tipo }}"
           luz: "{{ trigger.event.data.luz }}"
 
+light:
+  # Groups the two Tuya area lamps so they can be controlled together.
+  - platform: group
+    name: Luz Corredor
+    unique_id: luz_corredor
+    entities:
+      - light.lampada_area_1
+      - light.lampada_area_2
+
 zha:
   # Local quirks for devices ZHA does not support out of the box.
   custom_quirks_path: /config/custom_zha_quirks/
