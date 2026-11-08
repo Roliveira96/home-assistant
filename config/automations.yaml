@@ -673,4 +673,78 @@
       - light.lampada_area_1
       - light.lampada_area_2
   mode: restart
+- id: '1792500000017'
+  alias: 'Energia - Alternar período da tomada escritório'
+  description: 'Alterna a tarifa do medidor entre Madrugada, Manhã, Tarde e Noite.'
+  triggers:
+  - trigger: time
+    at:
+    - '00:00:00'
+    - '06:00:00'
+    - '12:00:00'
+    - '18:00:00'
+  - trigger: homeassistant
+    event: start
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.tomada_escritorio_por_periodo
+    data:
+      option: >-
+        {% set h = now().hour %}
+        {% if h < 6 %}
+          madrugada
+        {% elif h < 12 %}
+          manha
+        {% elif h < 18 %}
+          tarde
+        {% else %}
+          noite
+        {% endif %}
+  mode: restart
+- id: '1792500000018'
+  alias: 'Energia - Registrar pico diário de consumo'
+  description: 'Registra a potência máxima atingida no dia e o horário em que ocorreu.'
+  triggers:
+  - trigger: state
+    entity_id: sensor.tomada_medidor_consumo_energia
+  conditions:
+  - condition: template
+    value_template: >-
+      {{ trigger.to_state is not none and
+         trigger.to_state.state not in ['unavailable', 'unknown'] and
+         trigger.to_state.state | float(0) > states('input_number.tomada_escritorio_pico_watts_hoje') | float(0) }}
+  actions:
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.tomada_escritorio_pico_watts_hoje
+    data:
+      value: '{{ trigger.to_state.state | float(0) }}'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tomada_escritorio_horario_pico_hoje
+    data:
+      value: '{{ now().strftime(''%H:%M'') }}'
+  mode: queued
+- id: '1792500000019'
+  alias: 'Energia - Resetar pico diário de consumo à meia-noite'
+  description: 'Zera o pico de potência diário e o horário do pico às 00:00.'
+  triggers:
+  - trigger: time
+    at: '00:00:00'
+  conditions: []
+  actions:
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.tomada_escritorio_pico_watts_hoje
+    data:
+      value: 0
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tomada_escritorio_horario_pico_hoje
+    data:
+      value: '--:--'
+  mode: single
+
 

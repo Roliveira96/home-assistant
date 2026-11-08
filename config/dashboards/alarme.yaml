@@ -259,8 +259,37 @@ views:
           name: Gasto hoje
         - entity: sensor.tomada_escritorio_gasto_no_mes
           name: Gasto este mês
+        - entity: sensor.tomada_escritorio_pico_hoje
+          name: Pico de consumo hoje
+        - entity: sensor.tomada_escritorio_horario_de_maior_gasto
+          name: Horário de maior gasto
         - entity: input_number.tarifa_energia_kwh
           name: Tarifa de Energia (R$/kWh)
+      grid_options:
+        columns: full
+    - type: glance
+      title: ⏰ Gastos por Turno (Hoje)
+      columns: 4
+      entities:
+        - entity: sensor.tomada_escritorio_gasto_madrugada
+          name: Madrugada (0-6h)
+        - entity: sensor.tomada_escritorio_gasto_manha
+          name: Manhã (6-12h)
+        - entity: sensor.tomada_escritorio_gasto_tarde
+          name: Tarde (12-18h)
+        - entity: sensor.tomada_escritorio_gasto_noite
+          name: Noite (18-0h)
+      grid_options:
+        columns: full
+    - type: statistics-graph
+      title: 📊 Consumo Hora a Hora (Últimas 24h)
+      entities:
+        - sensor.tomada_medidor_consumo_energia_total
+      stat_types:
+        - change
+      chart_type: bar
+      period: hour
+      days_to_show: 1
       grid_options:
         columns: full
   - type: grid
