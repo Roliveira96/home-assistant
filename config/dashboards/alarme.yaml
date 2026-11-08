@@ -13,15 +13,40 @@ views:
     show_state: true
     show_icon: true
   - type: entity
-    entity: counter.eventos_possivel_humano
-    name: Pessoas hoje
+    entity: binary_sensor.pessoa_detectada_recentemente
+    name: Pessoa recente!
+    icon: mdi:motion-sensor-user
     show_name: true
     show_state: true
     show_icon: true
     color: red
+    visibility:
+    - condition: state
+      entity: binary_sensor.pessoa_detectada_recentemente
+      state: 'on'
   - type: entity
-    entity: counter.eventos_possivel_animal
-    name: Animais hoje
+    entity: person.ricardo_de_oliveira
+    name: Ricardo
+    show_name: true
+    show_state: true
+    show_icon: true
+  - type: entity
+    entity: person.jessica_alves_de_souza
+    name: Jéssica
+    show_name: true
+    show_state: true
+    show_icon: true
+  - type: entity
+    entity: sensor.tomada_medidor_consumo_energia
+    name: Servidor
+    icon: mdi:flash
+    show_name: true
+    show_state: true
+    show_icon: true
+    color: green
+  - type: entity
+    entity: sensor.qualidade_do_ar_casa
+    name: Qualidade do ar
     show_name: true
     show_state: true
     show_icon: true
@@ -35,19 +60,40 @@ views:
     color: blue
   - type: entity
     entity: switch.lampada_corredor_socket_1
-    name: Luz corredor
+    name: Frente
+    icon: mdi:lightbulb
     show_name: true
     show_state: true
     show_icon: true
     tap_action:
       action: toggle
   - type: entity
-    entity: binary_sensor.sensor_frente_da_casa
-    name: Frente
+    entity: light.luz_corredor
+    name: Área
+    icon: mdi:lightbulb-group
     show_name: true
     show_state: true
     show_icon: true
-    color: red
+    tap_action:
+      action: toggle
+  - type: entity
+    entity: light.lampada_sala
+    name: Sala
+    icon: mdi:ceiling-light
+    show_name: true
+    show_state: true
+    show_icon: true
+    tap_action:
+      action: toggle
+  - type: entity
+    entity: light.lampada_quarto
+    name: Quarto
+    icon: mdi:bed
+    show_name: true
+    show_state: true
+    show_icon: true
+    tap_action:
+      action: toggle
   - type: entity
     entity: sensor.zigbee_indisponiveis
     name: Zigbee fora do ar
@@ -120,12 +166,47 @@ views:
         action: perform-action
         perform_action: script.campainha_tocar
       grid_options:
+        columns: full
+        rows: 2
+  - type: grid
+    cards:
+    - type: heading
+      heading: Lâmpadas da Casa
+      icon: mdi:lightbulb-group
+    - type: button
+      entity: switch.lampada_corredor_socket_1
+      name: Frente
+      icon: mdi:lightbulb
+      show_state: true
+      tap_action:
+        action: toggle
+      grid_options:
         columns: 6
         rows: 2
     - type: button
-      entity: switch.lampada_corredor_socket_1
-      name: Luz do corredor
-      icon: mdi:lightbulb
+      entity: light.luz_corredor
+      name: Área
+      icon: mdi:lightbulb-group
+      show_state: true
+      tap_action:
+        action: toggle
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: button
+      entity: light.lampada_sala
+      name: Sala
+      icon: mdi:ceiling-light
+      show_state: true
+      tap_action:
+        action: toggle
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: button
+      entity: light.lampada_quarto
+      name: Quarto
+      icon: mdi:bed
       show_state: true
       tap_action:
         action: toggle
@@ -135,20 +216,27 @@ views:
   - type: grid
     cards:
     - type: heading
-      heading: Hoje
-      icon: mdi:calendar-today
+      heading: Presença & Segurança
+      icon: mdi:shield-account
     - type: tile
-      entity: counter.eventos_possivel_humano
-      name: Possível pessoa
+      entity: sensor.ultima_pessoa_avistada
+      name: Última pessoa
       icon: mdi:human-handsdown
       color: red
       grid_options:
         columns: 6
     - type: tile
-      entity: counter.eventos_possivel_animal
-      name: Possível animal
+      entity: sensor.ultimo_animal_avistado
+      name: Último animal
       icon: mdi:cat
       color: amber
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.tomada_medidor_consumo_energia
+      name: Servidor / PS4
+      icon: mdi:flash
+      color: green
       grid_options:
         columns: 6
     - type: tile
@@ -157,62 +245,206 @@ views:
       icon: mdi:alarm-light
       color: red
       grid_options:
+        columns: 6
+    - type: entities
+      title: ⚡ Consumo do PS4 / Servidor
+      entities:
+        - entity: sensor.tomada_medidor_consumo_energia
+          name: Potência em Watts
+        - entity: sensor.ps4_custo_por_hora
+          name: Custo por hora
+        - entity: sensor.ps4_estimativa_mensal_24h
+          name: Estimativa no mês (24/7)
+        - entity: sensor.ps4_gasto_hoje
+          name: Gasto hoje
+        - entity: sensor.ps4_gasto_no_mes
+          name: Gasto este mês
+        - entity: input_number.tarifa_energia_kwh
+          name: Tarifa de Energia (R$/kWh)
+      grid_options:
         columns: full
   - type: grid
     cards:
     - type: heading
-      heading: Clima e temperatura
+      heading: Clima & Qualidade do Ar
       icon: mdi:weather-partly-cloudy
     - type: weather-forecast
       entity: weather.forecast_casa
-      name: Casa
+      name: Previsão Casa
       show_current: true
       show_forecast: true
       forecast_type: daily
       grid_options:
         columns: full
-    - type: tile
-      entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
-      name: Área externa
-      icon: mdi:home-thermometer-outline
-      color: deep-orange
+
+    # Card de Aviso da Qualidade do Ar
+    - type: markdown
+      title: 🍃 Qualidade do Ar & Conforto
       grid_options:
-        columns: 4
-    - type: tile
+        columns: full
+      content: |
+        {% set u1 = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(0) %}
+        {% set t1 = states('sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura') | float(0) %}
+        {% set q1 = states('sensor.qualidade_do_ar_escritorio_1') %}
+        {% set u2 = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(0) %}
+        {% set t2 = states('sensor.escritorio_medidor_de_temperatura_temperatura') | float(0) %}
+        {% set q2 = states('sensor.qualidade_do_ar_escritorio_2') %}
+        {% set u3 = states('sensor.area_externa_sensor_de_passagem_novo_umidade') | float(0) %}
+        {% set t3 = states('sensor.area_externa_sensor_de_passagem_novo_temperatura') | float(0) %}
+        {% set q3 = states('sensor.qualidade_do_ar_area_externa') %}
+
+        {% macro badge_ar(status) -%}
+          {%- if status == 'Boa' -%}
+            🟢 **Boa** (Ideal: 40-60%)
+          {%- elif status == 'Média' -%}
+            🟡 **Média** (Atenção)
+          {%- else -%}
+            🔴 **Ruim** (Alerta)
+          {%- endif -%}
+        {%- endmacro %}
+
+        | Sensor / Ambiente | Temperatura | Umidade | Qualidade do Ar |
+        | :--- | :---: | :---: | :--- |
+        | 🏢 **Escritório 1** | {{ t1 }} °C | {{ u1 }}% | {{ badge_ar(q1) }} |
+        | 💻 **Escritório 2** | {{ t2 }} °C | {{ u2 }}% | {{ badge_ar(q2) }} |
+        | 🌳 **Área Externa** | {{ t3 }} °C | {{ u3 }}% | {{ badge_ar(q3) }} |
+
+        {% if u1 > 70 or u2 > 70 or u3 > 75 %}
+        ⚠️ **Aviso de Umidade Alta:** Níveis acima de 70% favorecem proliferação de ácaros e mofo. Abra janelas quando a umidade externa estiver menor.
+        {% elif u1 < 30 or u2 < 30 %}
+        ⚠️ **Aviso de Ar Seco:** Umidade abaixo de 30% causa ressecamento respiratório. Recomenda-se ligar o umidificador.
+        {% else %}
+        ✨ **Ar Confortável:** Parâmetros de temperatura e umidade dentro da faixa recomendada de bem-estar.
+        {% endif %}
+
+    # Medidores - Escritório 1
+    - type: heading
+      heading: Escritório 1
+      icon: mdi:desk
+      grid_options:
+        columns: full
+    - type: gauge
       entity: sensor.escritorio_medidor_de_temperatura_e_umidade_temperatura
-      name: Escritório 1
-      icon: mdi:thermometer
-      color: orange
+      name: Temperatura
+      needle: true
+      min: 0
+      max: 45
       grid_options:
-        columns: 4
-    - type: tile
-      entity: sensor.escritorio_medidor_de_temperatura_temperatura
-      name: Escritório 2
-      icon: mdi:thermometer
-      color: orange
-      grid_options:
-        columns: 4
-    - type: tile
-      entity: sensor.area_externa_sensor_de_passagem_novo_umidade
-      name: Umid. externa
-      icon: mdi:water-percent
-      color: light-blue
-      grid_options:
-        columns: 4
-    - type: tile
+        columns: 6
+      segments:
+        - from: 0
+          color: '#2196f3'
+        - from: 18
+          color: '#43a047'
+        - from: 26
+          color: '#ffa600'
+        - from: 32
+          color: '#db4437'
+    - type: gauge
       entity: sensor.escritorio_medidor_de_temperatura_e_umidade_umidade
-      name: Umid. escrit. 1
-      icon: mdi:water-percent
-      color: light-blue
+      name: Umidade (Qualidade do Ar)
+      needle: true
+      min: 0
+      max: 100
       grid_options:
-        columns: 4
-    - type: tile
+        columns: 6
+      segments:
+        - from: 0
+          color: '#db4437'
+        - from: 30
+          color: '#ffa600'
+        - from: 40
+          color: '#43a047'
+        - from: 60
+          color: '#ffa600'
+        - from: 70
+          color: '#db4437'
+
+    # Medidores - Escritório 2
+    - type: heading
+      heading: Escritório 2
+      icon: mdi:laptop
+      grid_options:
+        columns: full
+    - type: gauge
+      entity: sensor.escritorio_medidor_de_temperatura_temperatura
+      name: Temperatura
+      needle: true
+      min: 0
+      max: 45
+      grid_options:
+        columns: 6
+      segments:
+        - from: 0
+          color: '#2196f3'
+        - from: 18
+          color: '#43a047'
+        - from: 26
+          color: '#ffa600'
+        - from: 32
+          color: '#db4437'
+    - type: gauge
       entity: sensor.escritorio_medidor_de_temperatura_umidade
-      name: Umid. escrit. 2
-      icon: mdi:water-percent
-      color: light-blue
+      name: Umidade (Qualidade do Ar)
+      needle: true
+      min: 0
+      max: 100
       grid_options:
-        columns: 4
+        columns: 6
+      segments:
+        - from: 0
+          color: '#db4437'
+        - from: 30
+          color: '#ffa600'
+        - from: 40
+          color: '#43a047'
+        - from: 60
+          color: '#ffa600'
+        - from: 70
+          color: '#db4437'
+
+    # Medidores - Área Externa
+    - type: heading
+      heading: Área Externa
+      icon: mdi:nature
+      grid_options:
+        columns: full
+    - type: gauge
+      entity: sensor.area_externa_sensor_de_passagem_novo_temperatura
+      name: Temperatura
+      needle: true
+      min: 0
+      max: 45
+      grid_options:
+        columns: 6
+      segments:
+        - from: 0
+          color: '#2196f3'
+        - from: 18
+          color: '#43a047'
+        - from: 26
+          color: '#ffa600'
+        - from: 32
+          color: '#db4437'
+    - type: gauge
+      entity: sensor.area_externa_sensor_de_passagem_novo_umidade
+      name: Umidade (Qualidade do Ar)
+      needle: true
+      min: 0
+      max: 100
+      grid_options:
+        columns: 6
+      segments:
+        - from: 0
+          color: '#db4437'
+        - from: 30
+          color: '#ffa600'
+        - from: 40
+          color: '#43a047'
+        - from: 60
+          color: '#ffa600'
+        - from: 70
+          color: '#db4437'
   - type: grid
     cards:
     - type: heading
@@ -332,9 +564,10 @@ views:
       hours_to_show: 24
       target:
         entity_id:
-        - counter.eventos_possivel_humano
-        - counter.eventos_possivel_animal
+        - sensor.ultima_pessoa_avistada
+        - sensor.ultimo_animal_avistado
         - alarm_control_panel.alarme_casa
+        - light.luz_corredor
         - switch.lampada_corredor_socket_1
         - script.campainha_tocar
         - binary_sensor.sensor_frente_da_casa
@@ -487,15 +720,40 @@ views:
         columns: full
     - type: tile
       entity: switch.lampada_corredor_socket_1
-      name: Luz do corredor
+      name: Frente
       icon: mdi:lightbulb
       grid_options:
-        columns: 6
+        columns: 3
+    - type: tile
+      entity: light.luz_corredor
+      name: Área
+      icon: mdi:lightbulb-group
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: light.lampada_sala
+      name: Sala
+      icon: mdi:ceiling-light
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: light.lampada_quarto
+      name: Quarto
+      icon: mdi:bed
+      grid_options:
+        columns: 3
     - type: tile
       entity: sensor.ultima_campainha
       name: Campainha
       icon: mdi:doorbell-video
       color: blue
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.tomada_medidor_consumo_energia
+      name: Servidor / PS4
+      icon: mdi:flash
+      color: green
       grid_options:
         columns: 6
     - type: tile
@@ -579,15 +837,15 @@ views:
       grid_options:
         columns: 6
     - type: tile
-      entity: counter.eventos_possivel_humano
-      name: Pessoas Hoje
+      entity: sensor.ultima_pessoa_avistada
+      name: Última Pessoa
       icon: mdi:human-handsdown
       color: red
       grid_options:
         columns: 6
     - type: tile
-      entity: counter.eventos_possivel_animal
-      name: Animais Hoje
+      entity: sensor.ultimo_animal_avistado
+      name: Último Animal
       icon: mdi:cat
       color: amber
       grid_options:

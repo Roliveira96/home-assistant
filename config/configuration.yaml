@@ -64,6 +64,139 @@ template:
         state: >
           {{ ['sensor.eventos_hoje_sensor_de_passagem', 'sensor.eventos_hoje_lateral_casa',
               'sensor.eventos_hoje_fundos_casa'] | map('states') | map('int', 0) | sum }}
+      # Qualidade do ar para os 3 sensores de temperatura e umidade
+      - name: Qualidade do ar - Escritório 1
+        unique_id: qualidade_ar_escritorio_1
+        icon: mdi:air-filter
+        state: >
+          {% set u = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(-1) %}
+          {% if u < 0 %}
+            Indisponível
+          {% elif u >= 40 and u <= 60 %}
+            Boa
+          {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %}
+            Média
+          {% else %}
+            Ruim
+          {% endif %}
+        attributes:
+          nivel: >
+            {% set u = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(-1) %}
+            {% if u >= 40 and u <= 60 %} boa {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %} media {% else %} ruim {% endif %}
+          faixa: >
+            {% set u = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(-1) %}
+            {% if u < 30 %} Ar seco {% elif u <= 60 %} Ideal {% elif u <= 70 %} Moderado {% else %} Muito úmido {% endif %}
+
+      - name: Qualidade do ar - Escritório 2
+        unique_id: qualidade_ar_escritorio_2
+        icon: mdi:air-filter
+        state: >
+          {% set u = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(-1) %}
+          {% if u < 0 %}
+            Indisponível
+          {% elif u >= 40 and u <= 60 %}
+            Boa
+          {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %}
+            Média
+          {% else %}
+            Ruim
+          {% endif %}
+        attributes:
+          nivel: >
+            {% set u = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(-1) %}
+            {% if u >= 40 and u <= 60 %} boa {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %} media {% else %} ruim {% endif %}
+          faixa: >
+            {% set u = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(-1) %}
+            {% if u < 30 %} Ar seco {% elif u <= 60 %} Ideal {% elif u <= 70 %} Moderado {% else %} Muito úmido {% endif %}
+
+      - name: Qualidade do ar - Área Externa
+        unique_id: qualidade_ar_area_externa
+        icon: mdi:weather-dust
+        state: >
+          {% set u = states('sensor.area_externa_sensor_de_passagem_novo_umidade') | float(-1) %}
+          {% if u < 0 %}
+            Indisponível
+          {% elif u >= 40 and u <= 60 %}
+            Boa
+          {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %}
+            Média
+          {% else %}
+            Ruim
+          {% endif %}
+        attributes:
+          nivel: >
+            {% set u = states('sensor.area_externa_sensor_de_passagem_novo_umidade') | float(-1) %}
+            {% if u >= 40 and u <= 60 %} boa {% elif (u >= 30 and u < 40) or (u > 60 and u <= 70) %} media {% else %} ruim {% endif %}
+          faixa: >
+            {% set u = states('sensor.area_externa_sensor_de_passagem_novo_umidade') | float(-1) %}
+            {% if u < 30 %} Ar seco {% elif u <= 60 %} Ideal {% elif u <= 70 %} Moderado {% else %} Muito úmido {% endif %}
+
+      - name: Qualidade do ar - Casa
+        unique_id: qualidade_ar_casa
+        icon: mdi:home-thermometer
+        state: >
+          {% set u1 = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(-1) %}
+          {% set u2 = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(-1) %}
+          {% set validos = [u1, u2] | reject('lt', 0) | list %}
+          {% if validos | count == 0 %}
+            Indisponível
+          {% else %}
+            {% set media = (validos | sum) / (validos | count) %}
+            {% if media >= 40 and media <= 60 %}
+              Boa
+            {% elif (media >= 30 and media < 40) or (media > 60 and media <= 70) %}
+              Média
+            {% else %}
+              Ruim
+            {% endif %}
+          {% endif %}
+        attributes:
+          nivel: >
+            {% set u1 = states('sensor.escritorio_medidor_de_temperatura_e_umidade_umidade') | float(-1) %}
+            {% set u2 = states('sensor.escritorio_medidor_de_temperatura_umidade') | float(-1) %}
+            {% set validos = [u1, u2] | reject('lt', 0) | list %}
+            {% if validos | count == 0 %} desconhecido {% else %}
+              {% set media = (validos | sum) / (validos | count) %}
+              {% if media >= 40 and media <= 60 %} boa {% elif (media >= 30 and media < 40) or (media > 60 and media <= 70) %} media {% else %} ruim {% endif %}
+            {% endif %}
+
+      # Custos e Consumo do Servidor PS4 em Reais
+      - name: PS4 Custo por Hora
+        unique_id: ps4_custo_por_hora
+        icon: mdi:cash-clock
+        unit_of_measurement: "R$/h"
+        state: >-
+          {% set w = states('sensor.tomada_medidor_consumo_energia') | float(0) %}
+          {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
+          {{ ((w / 1000) * tarifa) | round(4) }}
+
+      - name: PS4 Estimativa Mensal 24h
+        unique_id: ps4_estimativa_mensal_24h
+        icon: mdi:calendar-month-outline
+        unit_of_measurement: "R$/mês"
+        state: >-
+          {% set w = states('sensor.tomada_medidor_consumo_energia') | float(0) %}
+          {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
+          {{ (((w * 24 * 30) / 1000) * tarifa) | round(2) }}
+
+      - name: PS4 Gasto Hoje
+        unique_id: ps4_gasto_hoje
+        icon: mdi:cash
+        unit_of_measurement: "R$"
+        state: >-
+          {% set kwh = states('sensor.ps4_energia_hoje') | float(0) %}
+          {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
+          {{ (kwh * tarifa) | round(2) }}
+
+      - name: PS4 Gasto no Mês
+        unique_id: ps4_gasto_no_mes
+        icon: mdi:wallet
+        unit_of_measurement: "R$"
+        state: >-
+          {% set kwh = states('sensor.ps4_energia_mes') | float(0) %}
+          {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
+          {{ (kwh * tarifa) | round(2) }}
+
   # "Detected recently": on while the sensor detects and for the confirmation
   # window after it clears. Used to confirm a human with a second sensor
   # (last_changed alone is not enough: restarts also change it).
@@ -115,10 +248,79 @@ template:
           tipo: "{{ trigger.event.data.tipo }}"
           luz: "{{ trigger.event.data.luz }}"
 
+  # Última pessoa avistada (com atributos de local e horário)
+  - triggers:
+      - trigger: event
+        event_type: alarme_evento
+        event_data:
+          tipo: humano
+      - trigger: state
+        entity_id:
+          - binary_sensor.sensor_frente_da_casa
+          - binary_sensor.camera_corredor_person_detection
+          - binary_sensor.sensor_corredor_portao
+        from: "off"
+        to: "on"
+    sensor:
+      - name: Última pessoa avistada
+        unique_id: last_person_detected
+        icon: mdi:human-handsdown
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          onde: >-
+            {% if trigger.event is defined %}
+              {{ trigger.event.data.sensores }}
+            {% elif trigger.entity_id == 'binary_sensor.sensor_frente_da_casa' %}
+              Frente da casa (Radar)
+            {% elif trigger.entity_id == 'binary_sensor.camera_corredor_person_detection' %}
+              Câmera do Corredor (IA)
+            {% elif trigger.entity_id == 'binary_sensor.sensor_corredor_portao' %}
+              Corredor do Portão
+            {% else %}
+              Área externa
+            {% endif %}
+
+  # Último animal avistado (classificado na lateral, fundos ou passagem)
+  - triggers:
+      - trigger: event
+        event_type: alarme_evento
+        event_data:
+          tipo: animal
+    sensor:
+      - name: Último animal avistado
+        unique_id: last_animal_detected
+        icon: mdi:cat
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          onde: "{{ trigger.event.data.sensores }}"
+
+  # Indicador binário de pessoa detectada recentemente (ativa por 10 min)
+  - triggers:
+      - trigger: event
+        event_type: alarme_evento
+        event_data:
+          tipo: humano
+      - trigger: state
+        entity_id:
+          - binary_sensor.sensor_frente_da_casa
+          - binary_sensor.camera_corredor_person_detection
+          - binary_sensor.sensor_corredor_portao
+        from: "off"
+        to: "on"
+    binary_sensor:
+      - name: Pessoa detectada recentemente
+        unique_id: recent_person_detected_flag
+        icon: mdi:motion-sensor-user
+        state: "on"
+        auto_off: "00:10:00"
+
+
 light:
   # Groups the two Tuya area lamps so they can be controlled together.
   - platform: group
-    name: Luz Corredor
+    name: Lâmpada da Área
     unique_id: luz_corredor
     entities:
       - light.lampada_area_1
@@ -134,8 +336,8 @@ alarm_control_panel:
     name: Alarme casa
     unique_id: alarme_casa
     code_arm_required: false
-    # Exit delay when arming "away"; "home" arms immediately.
-    arming_time: 30
+    # Arming time is 0 for immediate activation on arming
+    arming_time: 0
     delay_time: 0
     # Stays in "triggered" for 5 min, then goes back to armed.
     trigger_time: 300
@@ -200,6 +402,15 @@ lovelace:
 # Tunable settings for the human/animal classification (shown on the alarm
 # dashboard). No "initial" so values set in the UI survive restarts.
 input_number:
+  tarifa_energia_kwh:
+    name: "Tarifa Energia (R$/kWh)"
+    icon: mdi:currency-brl
+    initial: 0.8142
+    min: 0.0
+    max: 5.0
+    step: 0.0001
+    mode: box
+    unit_of_measurement: "BRL/kWh"
   alarme_janela_confirmacao:
     name: Janela de confirmação
     icon: mdi:timer-sand
@@ -224,6 +435,16 @@ input_number:
     step: 5
     unit_of_measurement: min
     mode: slider
+
+utility_meter:
+  ps4_energia_diaria:
+    source: sensor.tomada_medidor_consumo_energia_total
+    name: "PS4 Energia Hoje"
+    cycle: daily
+  ps4_energia_mensal:
+    source: sensor.tomada_medidor_consumo_energia_total
+    name: "PS4 Energia Mês"
+    cycle: monthly
 
 notify:
   # Household phones: alarm and doorbell notifications go to everyone.

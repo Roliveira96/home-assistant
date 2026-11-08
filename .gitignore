@@ -19,6 +19,8 @@ config/deps/
 config/tts/
 config/backups/
 config/*.bak-*
+*.bak
+*.bak-*
 
 # Backups (encrypted .tar files from Home Assistant)
 *.tar
