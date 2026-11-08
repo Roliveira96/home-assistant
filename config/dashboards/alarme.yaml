@@ -159,60 +159,57 @@ views:
     - type: markdown
       content: |
         {% set s = states.sensor.ultima_campainha %} {% if s and s.state not in ['unknown', 'unavailable'] %} {% set m = ((now() - as_datetime(s.state)).total_seconds() // 60) | int %} 🔔 Tocou **{{ 'agora há pouco' if m < 1 else ('há ' ~ m ~ ' min' if m < 60 else ('há ' ~ (m // 60) ~ ' h' if m < 1440 else 'há ' ~ (m // 1440) ~ ' dia(s)')) }}** ({{ as_local(as_datetime(s.state)).strftime('%d/%m às %H:%M') }}), {{ s.attributes.tipo }}{{ ', luz do corredor ligada por 1 min' if s.attributes.luz else '' }}. {% else %} 🔔 A campainha ainda não tocou. {% endif %}
-    - type: button
-      name: Testar campainha
-      icon: mdi:doorbell
+    - type: tile
+      entity: script.campainha_tocar
+      name: Testar Campainha
+      icon: mdi:bell-ring
+      color: blue
       tap_action:
         action: perform-action
         perform_action: script.campainha_tocar
       grid_options:
         columns: full
-        rows: 2
   - type: grid
     cards:
     - type: heading
-      heading: Lâmpadas da Casa
+      heading: Iluminação da Casa
       icon: mdi:lightbulb-group
-    - type: button
+    - type: tile
       entity: switch.lampada_corredor_socket_1
       name: Frente
       icon: mdi:lightbulb
-      show_state: true
+      color: amber
       tap_action:
         action: toggle
       grid_options:
         columns: 6
-        rows: 2
-    - type: button
+    - type: tile
       entity: light.luz_corredor
       name: Área
       icon: mdi:lightbulb-group
-      show_state: true
+      color: amber
       tap_action:
         action: toggle
       grid_options:
         columns: 6
-        rows: 2
-    - type: button
+    - type: tile
       entity: light.lampada_sala
       name: Sala
       icon: mdi:ceiling-light
-      show_state: true
+      color: amber
       tap_action:
         action: toggle
       grid_options:
         columns: 6
-        rows: 2
-    - type: button
+    - type: tile
       entity: light.lampada_quarto
       name: Quarto
       icon: mdi:bed
-      show_state: true
+      color: amber
       tap_action:
         action: toggle
       grid_options:
         columns: 6
-        rows: 2
   - type: grid
     cards:
     - type: heading
@@ -233,40 +230,56 @@ views:
       grid_options:
         columns: 6
     - type: tile
-      entity: sensor.tomada_medidor_consumo_energia
-      name: Tomada Escritório
-      icon: mdi:flash
-      color: green
-      grid_options:
-        columns: 6
-    - type: tile
       entity: sensor.disparos_do_alarme_hoje
       name: Disparos do alarme
       icon: mdi:alarm-light
       color: red
       grid_options:
         columns: 6
-    - type: entities
-      title: ⚡ Consumo - Tomada Escritório
-      entities:
-        - entity: sensor.tomada_medidor_consumo_energia
-          name: Potência em Watts
-        - entity: sensor.tomada_escritorio_custo_por_hora
-          name: Custo por hora
-        - entity: sensor.tomada_escritorio_estimativa_mensal_24h
-          name: Estimativa no mês (24/7)
-        - entity: sensor.tomada_escritorio_gasto_hoje
-          name: Gasto hoje
-        - entity: sensor.tomada_escritorio_gasto_no_mes
-          name: Gasto este mês
-        - entity: sensor.tomada_escritorio_pico_hoje
-          name: Pico de consumo hoje
-        - entity: sensor.tomada_escritorio_horario_de_maior_gasto
-          name: Horário de maior gasto
-        - entity: input_number.tarifa_energia_kwh
-          name: Tarifa de Energia (R$/kWh)
+    - type: tile
+      entity: binary_sensor.recent_detection_passage_sensor
+      name: Sensor passagem
+      icon: mdi:motion-sensor
+      color: blue
       grid_options:
-        columns: full
+        columns: 6
+  - type: grid
+    cards:
+    - type: heading
+      heading: Energia & Consumo
+      icon: mdi:lightning-bolt
+      badges:
+        - type: entity
+          entity: sensor.tomada_medidor_consumo_energia
+          color: green
+    - type: tile
+      entity: sensor.tomada_medidor_consumo_energia
+      name: Potência em Uso
+      icon: mdi:flash
+      color: green
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.tomada_escritorio_gasto_hoje
+      name: Gasto Hoje
+      icon: mdi:cash
+      color: teal
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.tomada_escritorio_pico_hoje
+      name: Pico do Dia
+      icon: mdi:lightning-bolt
+      color: red
+      grid_options:
+        columns: 6
+    - type: tile
+      entity: sensor.tomada_escritorio_horario_de_maior_gasto
+      name: Maior Gasto
+      icon: mdi:chart-timeline-variant
+      color: purple
+      grid_options:
+        columns: 6
     - type: glance
       title: ⏰ Gastos por Turno (Hoje)
       columns: 4
@@ -279,6 +292,19 @@ views:
           name: Tarde (12-18h)
         - entity: sensor.tomada_escritorio_gasto_noite
           name: Noite (18-0h)
+      grid_options:
+        columns: full
+    - type: entities
+      title: 📋 Métricas e Projeções
+      entities:
+        - entity: sensor.tomada_escritorio_custo_por_hora
+          name: Custo atual por hora
+        - entity: sensor.tomada_escritorio_estimativa_mensal_24h
+          name: Estimativa mensal (24/7)
+        - entity: sensor.tomada_escritorio_gasto_no_mes
+          name: Gasto total este mês
+        - entity: input_number.tarifa_energia_kwh
+          name: Tarifa de Energia (R$/kWh)
       grid_options:
         columns: full
     - type: statistics-graph
