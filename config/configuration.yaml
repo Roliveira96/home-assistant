@@ -160,9 +160,9 @@ template:
               {% if media >= 40 and media <= 60 %} boa {% elif (media >= 30 and media < 40) or (media > 60 and media <= 70) %} media {% else %} ruim {% endif %}
             {% endif %}
 
-      # Custos e Consumo do Servidor PS4 em Reais
-      - name: PS4 Custo por Hora
-        unique_id: ps4_custo_por_hora
+      # Custos e Consumo da Tomada do Escritório em Reais
+      - name: Tomada Escritório Custo por Hora
+        unique_id: tomada_escritorio_custo_por_hora
         icon: mdi:cash-clock
         unit_of_measurement: "R$/h"
         state: >-
@@ -170,8 +170,8 @@ template:
           {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
           {{ ((w / 1000) * tarifa) | round(4) }}
 
-      - name: PS4 Estimativa Mensal 24h
-        unique_id: ps4_estimativa_mensal_24h
+      - name: Tomada Escritório Estimativa Mensal 24h
+        unique_id: tomada_escritorio_estimativa_mensal_24h
         icon: mdi:calendar-month-outline
         unit_of_measurement: "R$/mês"
         state: >-
@@ -179,21 +179,21 @@ template:
           {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
           {{ (((w * 24 * 30) / 1000) * tarifa) | round(2) }}
 
-      - name: PS4 Gasto Hoje
-        unique_id: ps4_gasto_hoje
+      - name: Tomada Escritório Gasto Hoje
+        unique_id: tomada_escritorio_gasto_hoje
         icon: mdi:cash
         unit_of_measurement: "R$"
         state: >-
-          {% set kwh = states('sensor.ps4_energia_hoje') | float(0) %}
+          {% set kwh = states('sensor.tomada_escritorio_energia_hoje') | float(0) %}
           {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
           {{ (kwh * tarifa) | round(2) }}
 
-      - name: PS4 Gasto no Mês
-        unique_id: ps4_gasto_no_mes
+      - name: Tomada Escritório Gasto no Mês
+        unique_id: tomada_escritorio_gasto_no_mes
         icon: mdi:wallet
         unit_of_measurement: "R$"
         state: >-
-          {% set kwh = states('sensor.ps4_energia_mes') | float(0) %}
+          {% set kwh = states('sensor.tomada_escritorio_energia_mes') | float(0) %}
           {% set tarifa = states('input_number.tarifa_energia_kwh') | float(0.8142) %}
           {{ (kwh * tarifa) | round(2) }}
 
@@ -437,13 +437,13 @@ input_number:
     mode: slider
 
 utility_meter:
-  ps4_energia_diaria:
+  tomada_escritorio_energia_diaria:
     source: sensor.tomada_medidor_consumo_energia_total
-    name: "PS4 Energia Hoje"
+    name: "Tomada Escritório Energia Hoje"
     cycle: daily
-  ps4_energia_mensal:
+  tomada_escritorio_energia_mensal:
     source: sensor.tomada_medidor_consumo_energia_total
-    name: "PS4 Energia Mês"
+    name: "Tomada Escritório Energia Mês"
     cycle: monthly
 
 notify:

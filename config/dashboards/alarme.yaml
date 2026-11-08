@@ -38,7 +38,7 @@ views:
     show_icon: true
   - type: entity
     entity: sensor.tomada_medidor_consumo_energia
-    name: Servidor
+    name: Tomada Escritório
     icon: mdi:flash
     show_name: true
     show_state: true
@@ -234,7 +234,7 @@ views:
         columns: 6
     - type: tile
       entity: sensor.tomada_medidor_consumo_energia
-      name: Servidor / PS4
+      name: Tomada Escritório
       icon: mdi:flash
       color: green
       grid_options:
@@ -247,17 +247,17 @@ views:
       grid_options:
         columns: 6
     - type: entities
-      title: ⚡ Consumo do PS4 / Servidor
+      title: ⚡ Consumo - Tomada Escritório
       entities:
         - entity: sensor.tomada_medidor_consumo_energia
           name: Potência em Watts
-        - entity: sensor.ps4_custo_por_hora
+        - entity: sensor.tomada_escritorio_custo_por_hora
           name: Custo por hora
-        - entity: sensor.ps4_estimativa_mensal_24h
+        - entity: sensor.tomada_escritorio_estimativa_mensal_24h
           name: Estimativa no mês (24/7)
-        - entity: sensor.ps4_gasto_hoje
+        - entity: sensor.tomada_escritorio_gasto_hoje
           name: Gasto hoje
-        - entity: sensor.ps4_gasto_no_mes
+        - entity: sensor.tomada_escritorio_gasto_no_mes
           name: Gasto este mês
         - entity: input_number.tarifa_energia_kwh
           name: Tarifa de Energia (R$/kWh)
@@ -751,7 +751,7 @@ views:
         columns: 6
     - type: tile
       entity: sensor.tomada_medidor_consumo_energia
-      name: Servidor / PS4
+      name: Tomada Escritório
       icon: mdi:flash
       color: green
       grid_options:
